@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+    
+        <record id="view_order_line_expiry_report_wizard" model="ir.ui.view">
+                <field name="name">order.line.expiry.report.wizard.form</field>
+                <field name="model">order.line.expiry</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Print sale order expiry line" version="7.0">
+                    <group>
+                        <field name="partner_id"/>
+                        <field name="date"/>
+                    </group>
+                    <footer>
+                        <button name="print_report" class="oe_highlight" string="Print" type="object"/>
+                        <button name="send_mail_partner" class="oe_highlight" string="Send Mail" type="object"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>       
+                </form>
+            </field>
+        </record>
+        
+        <record id="action_view_order_line_expiry_report_wizard" model="ir.actions.act_window">
+            <field name="name">Order line expiry report</field>
+            <field name="res_model">order.line.expiry</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem action="action_view_order_line_expiry_report_wizard"
+                  id="menu_view_order_line_expiry_report_wizard"
+                  parent="product.prod_config_main"
+                  sequence="7"/>
+                  
+        
+    </data>
+</openerp>

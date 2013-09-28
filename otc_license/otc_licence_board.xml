@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+    <record model="ir.ui.view" id="view_otc_license_expired_tree">
+      <field name="name">otc.license.tree</field>
+      <field name="model">otc.license</field>
+      <field eval="20" name="priority"/>
+      <field name="arch" type="xml">
+        <tree string="OTC License">
+            <field name="product_id"/>
+            <field name="otc"/>
+            <field name="activation_start_date"/>
+            <field name="activation_end_date"/>
+            <field name="runtime"/>
+        </tree>
+      </field>
+    </record>
+
+        <record model="ir.actions.act_window" id="action_view_otc_license_expired_tree">
+            <field name="name">Expiry Products</field>
+            <field name="res_model">otc.license</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="domain">['&amp;', ('activation_end_date', '!=', False), ('activation_end_date', '&lt;=', time.strftime('%Y-%m-%d'))]</field>
+            <field name="view_id" ref="view_otc_license_expired_tree"></field>
+         </record>
+
+    <record model="ir.ui.view" id="view_otc_license_next_tree">
+      <field name="name">otc.license.tree</field>
+      <field name="model">otc.license</field>
+      <field eval="22" name="priority"/>
+      <field name="arch" type="xml">
+        <tree string="OTC License">
+            <field name="product_id"/>
+            <field name="otc"/>
+            <field name="activation_start_date"/>
+            <field name="activation_end_date"/>
+            <field name="runtime"/>
+        </tree>
+      </field>
+    </record>
+
+        <record model="ir.actions.act_window" id="action_view_otc_license_next_expired_tree">
+            <field name="name">Expiry Products in Next 10 Days</field>
+            <field name="res_model">otc.license</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="domain">['&amp;','&amp;', ('activation_end_date', '!=', False), ('activation_end_date', '&gt;=', time.strftime('%Y-%m-%d')), ('activation_end_date', '&lt;=', (context_today() + datetime.timedelta(10)).strftime('%Y-%m-%d'))]</field>
+            <field name="view_id" ref="view_otc_license_next_tree"></field>
+         </record>
+
+    <record model="ir.ui.view" id="view_otc_license_avl_tree">
+      <field name="name">otc.license.tree</field>
+      <field name="model">otc.license</field>
+      <field eval="20" name="priority"/>
+      <field name="arch" type="xml">
+        <tree string="OTC License">
+            <field name="product_id"/>
+            <field name="otc"/>
+            <field name="activation_start_date"/>
+            <field name="activation_end_date"/>
+            <field name="runtime"/>
+        </tree>
+      </field>
+    </record>
+
+        <record model="ir.actions.act_window" id="action_view_otc_license_avl_tree">
+            <field name="name"> Available Products</field>
+            <field name="res_model">otc.license</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="domain">['&amp;', ('activation_end_date', '!=', False), ('activation_end_date', '&gt;=', time.strftime('%Y-%m-%d'))]</field>
+            <field name="view_id" ref="view_otc_license_avl_tree"></field>
+         </record>
+         
+        <record id="board_otc_license_form" model="ir.ui.view">
+            <field name="name">board.otc.license.form</field>
+            <field name="model">board.board</field>
+            <field name="arch" type="xml">
+                <form string="otc license board" version="7.0">
+                    <board style="2-1">
+                        <column>
+                            <action name="%(action_view_otc_license_expired_tree)d" string="Expiry Products"/>
+                            <action name="%(action_view_otc_license_avl_tree)d" string=" Available Products"/>
+                        </column>
+                        <column>
+                           <action name="%(action_view_otc_license_next_expired_tree)d" string="Expiry Products in Next 10 Days"/>
+                        </column>
+                    </board>
+                </form>
+            </field>
+        </record>
+
+        <record id="open_board_otc_license" model="ir.actions.act_window">
+            <field name="name">Licence Product </field>
+            <field name="res_model">board.board</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="board_otc_license_form"/>
+        </record>
+
+        <menuitem   id="menu_board_otc_license" 
+                    parent="base.menu_reporting_dashboard" 
+                    action="open_board_otc_license" 
+                    sequence="25" 
+                    />
+
+    </data>
+</openerp>

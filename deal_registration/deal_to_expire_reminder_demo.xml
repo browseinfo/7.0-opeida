@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<openerp>
+    <data noupdate="1">
+        <!-- demo automated actions add message on deals to expire in next 2 days -->
+        <record id="filter_new_approved_deals" model="ir.filters">
+            <field name="name">New-Approved Deals</field>
+            <field name="model_id">deal.registration</field>
+            <field name="domain">[('state','in',('new','approved'))]</field>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="action_email_reminder_deal" model="ir.actions.server">
+            <field name="name">Reminder to Customer</field>
+            <field name="model_id" ref="model_deal_registration"/>
+            <field name="condition">True</field>
+            <field name="type">ir.actions.server</field>
+            <field name="state">email</field>
+            <field name="email">object.partner_id.email</field>
+            <field name="subject">Reminder on Deal: [[object.name ]]</field>
+            <field name="message">Warning unprocessed deal is about to expire in next 2 days.
+Reference: [[object.name ]]
+Registration Date: [[object.date_registration]]
+Expiry Date: [[object.date_deadline]]
+            </field>
+        </record>
+        <record id="rule_set_reminder_deal" model="base.action.rule">
+            <field name="name">Set Auto Reminder on deal which expires in next 2 days.</field>
+            <field name="model_id" ref="model_deal_registration"/>
+            <field name="sequence">1</field>
+            <field name="filter_id" ref="filter_new_approved_deals"/>
+            <field name="trg_date_id" ref="field_deal_registration_date_deadline"/>
+            <field name="trg_date_range">-2</field>
+            <field name="trg_date_range_type">day</field>
+            <field name="server_action_ids" eval="[(6,0,[ref('action_email_reminder_deal')])]"/>
+        </record>
+
+    </data>
+</openerp>

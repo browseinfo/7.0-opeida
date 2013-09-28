@@ -1,0 +1,35 @@
+<openerp>
+    <data noupdate="1">
+
+        <!--Email template -->
+        <record id="email_template_order_line_expiry" model="email.template">
+            <field name="name">Sale Order Expiry product- Send by Email</field>
+            <field name="email_from">${object.user_id.email or ''}</field>
+            <field name="subject"> ${object.name or ' ' }</field>
+            <field name="model_id" ref="sale.model_sale_order_line"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
+
+    <p>Hello ${object.order_partner_id.name},</p>
+<p> Here is your sale order details</p>
+
+<p>  Order Reference:${object.order_id.name}  </p>
+<p>  Product :  ${object.product_id.name}  </p>
+<p>  Quantity : ${object.product_uom_qty}${object.product_uom} </p>
+<p>  Expiry Date: ${object.license_id.activation_end_date} </p>
+<p>  Desctiption: ${object.name} </p>
+
+
+Thanks,
+${object.user_id.name}
+${object.user_id.signature}
+
+</div>
+            
+            ]]></field>
+        </record>
+        
+
+    </data>
+</openerp>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="wkf_deal" model="workflow">
+            <field name="name">deal.registration.basic</field>
+            <field name="osv">deal.registration</field>
+            <field name="on_create">True</field>
+        </record>
+
+        <!-- Activity -->
+        <record id="act_new" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_deal"/>
+            <field name="name">new</field>
+            <field name="kind">function</field>
+            <field name="action">write({'state':'new'})</field>
+            <field name="flow_start">True</field>
+        </record>
+        
+        <record id="act_approved" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_deal"/>
+            <field name="name">approved</field>
+            <field name="kind">function</field>
+            <field name="action">action_approved()</field>
+        </record>
+
+        <record id="act_expired" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_deal"/>
+            <field name="name">expired</field>
+            <field name="kind">function</field>
+            <field name="action">action_expired()</field>
+        </record>
+
+        <record id="act_closed" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_deal"/>
+            <field name="name">closed</field>
+            <field name="kind">function</field>
+            <field name="action">write({'state':'closed'})</field>
+            <field name="flow_stop">True</field>
+        </record>
+
+        <!-- Transistion -->
+
+        <record id="trans_new_approved" model="workflow.transition">
+            <field name="act_from" ref="act_new"/>
+            <field name="act_to" ref="act_approved"/>
+            <field name="signal">deal_approved</field>
+        </record>
+        <record id="trans_new_expired" model="workflow.transition">
+            <field name="act_from" ref="act_new"/>
+            <field name="act_to" ref="act_expired"/>
+            <field name="signal">deal_expired</field>
+        </record>
+        <record id="trans_approved_closed" model="workflow.transition">
+            <field name="act_from" ref="act_approved"/>
+            <field name="act_to" ref="act_closed"/>
+            <field name="signal">deal_closed</field>
+        </record>
+        <record id="trans_approved_expired" model="workflow.transition">
+            <field name="act_from" ref="act_approved"/>
+            <field name="act_to" ref="act_expired"/>
+            <field name="signal">deal_expired</field>
+        </record>
+        <record id="trans_expired_new" model="workflow.transition">
+            <field name="act_from" ref="act_expired"/>
+            <field name="act_to" ref="act_new"/>
+            <field name="signal">deal_new</field>
+        </record>
+
+    </data>
+</openerp>

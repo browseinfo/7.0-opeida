@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_otc_license_purchase_user,otc.license.purchase.user,purchase.model_otc_license,group_purchase_user,1,1,1,0
+access_partner_partner,res.partner.partner,base.model_partner_partner,base.group_sale_salesman,1,1,1,1

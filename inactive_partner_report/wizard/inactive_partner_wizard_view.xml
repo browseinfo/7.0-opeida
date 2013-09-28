@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+    
+        <record id="view_inactive_partner_report_wizard" model="ir.ui.view">
+                <field name="name">inactive.partner.report.wizard.form</field>
+                <field name="model">inactive.partner</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Print inactive partner report" version="7.0">
+                    <footer>
+                        <button string="Print" name="print_report" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>            
+                </form>
+            </field>
+        </record>
+        
+        <record id="action_view_inactive_partner_report_wizard" model="ir.actions.act_window">
+            <field name="name">Inactive Partner report</field>
+            <field name="res_model">inactive.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem action="action_view_inactive_partner_report_wizard"
+                  id="menu_view_inactive_partner_report_wizard"
+                  parent="product.prod_config_main"
+                  sequence="7"/>
+                  
+            <!-- Monthly partner -->     
+                  
+        <record id="view_month_partner_report_wizard" model="ir.ui.view">
+                <field name="name">month.partner.report.wizard.form</field>
+                <field name="model">month.partner</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Print monhly partner report" version="7.0">
+                    <group>
+                        <field name="period_id"/>
+                    </group>
+                    <footer>
+                        <button string="Print" name="print_report" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record id="action_month_partner_report_wizard" model="ir.actions.act_window">
+            <field name="name">Monthly new Partner</field>
+            <field name="res_model">month.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem action="action_month_partner_report_wizard"
+                  id="menu_view_month_partner_report_wizard"
+                  parent="product.prod_config_main"
+                  sequence="7"/>
+        
+    </data>
+</openerp>

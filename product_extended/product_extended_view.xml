@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+  
+          <!--  product form view -->
+          
+        <record id="product_extended_product_form_inherit" model="ir.ui.view">
+            <field name="name">product.extended.product.form.inherit</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook/page[@string='Inventory']" position="after">
+                    <page string="License &amp; Users">
+                    <group>
+                        <group>
+                             <field name="validity"/>
+                             <field name="users"/>
+                        </group>
+                        <group>
+                            <field name="activation_date"/>
+                            <field name="expiry_date"/>
+                        </group>
+                     </group>
+                     </page>
+                </xpath>
+            </field>
+        </record>
+
+
+    </data>
+</openerp>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+
+
+<data noupdate="1">
+<!-- 
+    <record id="rule_pertner_partner" model="ir.rule">
+        <field name="name">Partner License</field>
+        <field ref="model_res_partner_partner" name="model_id"/>
+        <field name="domain_force">['|',('partner_id','=',[user_id.partner_id.id]),('user_id','=',False)]</field>
+        <field name="groups" eval="[(4, ref('base.group_sale_salesman'))]"/>
+    </record>
+     -->
+</data>
+</openerp>
