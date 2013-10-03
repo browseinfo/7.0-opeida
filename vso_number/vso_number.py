@@ -126,6 +126,20 @@ class sale_order_line(osv.osv):
                 self.write(cr, uid, ids, vals, context)
         return {'value': vals}
     def create(self, cr, uid, vals, context=None):
+        vso_obj = self.pool.get('vso.vso')
+        
+        vso_lines = vals.get('vso_line_ids')
+        if vso_lines:
+            for vso in vso_lines:
+                if vso and vso[2]:
+                    vso_id = vso[2].get('vso_id')
+                    vso_qty = vso_obj.browse(cr, uid, vso_id, context=context).product_qty
+                    
+                    if vso[2].get('product_qty') > vso_qty:
+                        raise osv.except_osv(_('Warring!'),
+                                                     _('Order line product quantity is more then vso number\'s quantity"'))
+                        
+            
         box_obj = self.pool.get('box.box')
         vso_obj = self.pool.get('stock.production.lot')
         qr_obj = self.pool.get('qr.number')
@@ -214,6 +228,7 @@ class sale_order(osv.osv):
 
     def create(self, cr, uid, vals, context=None):
         so_id = super(sale_order, self).create(cr, uid, vals, context=context)
+            
         prod_ids = self.pool.get('product.product').search(cr, uid, [('description','=','Box'),('type','=','product'),('procure_method','=','make_to_order'),('supply_method','=','buy')], context=context)
         for p in self.pool.get('product.product').browse(cr, uid, prod_ids):
             if p.name=='Box':
