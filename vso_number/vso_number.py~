@@ -321,14 +321,13 @@ box()
 class vso_vso(osv.osv):
     _name = 'vso.vso'
     _columns = {
-        'vso_id':fields.many2one('stock.production.lot','VSO Number', select=True),
-        'product_qty': fields.float('Quantity', digits_compute= dp.get_precision('Product UoS')),
+        'vso_id':fields.many2one('stock.production.lot','VSO Number', select=True, required=True),
+        'product_qty': fields.float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True),
         'order_line_id': fields.many2one('sale.order.line', 'order'),
-        'product_id': fields.many2one('product.product', 'Product'),
+        'product_id': fields.many2one('product.product', 'Product', required=True),
 
     }
     def onchange_quantity(self, cr, uid, ids, vso_id, product_id, product_qty, context=None):     
-        print "\n\n*********product_id=",product_id,'\n\n***','product_qty=',product_qty,"context=",context,"vso_id=",vso_id
         lot_obj_browse = self.pool.get('stock.production.lot').browse(cr, uid, vso_id)
         if product_qty > lot_obj_browse.stock_available:
         	raise osv.except_osv(_('Warring!'),
