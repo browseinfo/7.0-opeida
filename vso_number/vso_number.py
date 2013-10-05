@@ -127,17 +127,16 @@ class sale_order_line(osv.osv):
         return {'value': vals}
     def create(self, cr, uid, vals, context=None):
         vso_obj = self.pool.get('vso.vso')
-        
+        qty = 0.0
         vso_lines = vals.get('vso_line_ids')
+        vso_qty = vals.get('product_uom_qty')
         if vso_lines:
             for vso in vso_lines:
                 if vso and vso[2]:
-                    vso_id = vso[2].get('vso_id')
-                    vso_qty = vso_obj.browse(cr, uid, vso_id, context=context).product_qty
-                    
-                    if vso[2].get('product_qty') > vso_qty:
-                        raise osv.except_osv(_('Warring!'),
-                                                     _('Order line product quantity is more then vso number\'s quantity"'))
+                    qty += vso[2].get('product_qty')                    
+            if qty > vso_qty:
+                raise osv.except_osv(_('Warring!'),
+                                             _('VSO product quantity is more then Order line product quantity'))
                         
             
         box_obj = self.pool.get('box.box')
