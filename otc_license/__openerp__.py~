@@ -33,7 +33,7 @@ OTC License Expiry
     'author': 'OpenERP SA',
     'website': 'http://www.openerp.com',
     'images': [],
-    'depends': ['sale', 'purchase', 'product_extended'],
+    'depends': ['sale', 'purchase', 'vso_number', 'product_extended'],
     'data': [
         'security/ir.model.access.csv',
         'otc_license_view.xml',

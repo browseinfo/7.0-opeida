@@ -16,6 +16,7 @@ class stock_production_lot(osv.osv):
     _inherit = 'stock.production.lot'
     _columns = {
         'name': fields.char('VSO Number', size=64, required=True),
+        'otc_ids': fields.many2many('otc.license', 'otc_license_lot_rel', 'vso_id', 'otc_id', 'OTC'),
         }
 
     _defaults = {

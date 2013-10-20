@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+
+        <record id="view_otc_license_filter" model="ir.ui.view">
+            <field name="name">otc.license.filter</field>
+            <field name="model">otc.license</field>
+            <field name="arch" type="xml">
+                <search string="OTC License">
+                    <filter string="Unsold" name="sold" domain="[('sold','=', False),]"/>
+                    <field name="product_id"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="vso" domain="[]" context="{'group_by':'vso_id'}" help="vso reference"/>
+                        <filter string="Product"  domain="[]" context="{'group_by':'product_id'}"/>
+                        <filter string="Sold"  domain="[]" context="{'group_by':'sold'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+    <!-- OTC License Stage Form View -->
+    <record model="ir.ui.view" id="view_otc_license_form">
+      <field name="name">otc.license.form</field>
+      <field name="model">otc.license</field>
+      <field name="arch" type="xml">
+        <form string="OTC License" version="7.0">
+          <group>
+            <group>
+                <field name="otc"/>
+                <field name="product_id" on_change="on_change_product_id(product_id)"/>
+                <field name="runtime"/>
+                <field name="users"/>
+            </group>
+            <group>
+                <field name="activation_start_date"/>
+                <field name="activation_end_date"/>
+                <field name="expiry_date"/>
+                <field name="vso_id"/>
+            </group>
+          </group>
+        </form>
+      </field>
+    </record>
+        
+        
+        
+    
+    <!-- note Stage Tree View -->
+    <record model="ir.ui.view" id="view_otc_license_tree">
+      <field name="name">otc.license.tree</field>
+      <field name="model">otc.license</field>
+      <field name="field_parent"></field>
+      <field name="arch" type="xml">
+        <tree string="OTC License" colors="gray:sold==True;">
+            <field name="product_id"/>
+            <field name="otc"/>
+            <field name="activation_start_date"/>
+            <field name="activation_end_date"/>
+            <field name="expiry_date"/>
+            <field name="runtime"/>
+            <field name="vso_id"/>
+            <field name="sold" invisible="1"/>
+        </tree>
+      </field>
+    </record>
+
+    <!-- note Stage Action -->
+    <record model="ir.actions.act_window" id="action_otc_license_stage">
+        <field name="name">OTC License</field>
+        <field name="res_model">otc.license</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_type">form</field>
+        <field name="search_view_id" ref="view_otc_license_filter"/>
+        <field name="context">{"search_default_sold":1}</field>
+        
+    </record>
+    <menuitem name="OTC License" id="menu_otc_license_parent" parent="base.menu_purchase_root"/>
+    <menuitem name="OTC License" id="menu_otc_license" parent="menu_otc_license_parent" action="action_otc_license_stage"/>
+
+
+
+    <record model="ir.ui.view" id="sale_expiry_sale_order_line_form">
+            <field name="name">sale.order.line.license.view.form</field>
+            <field name="model">sale.order</field>
+             <field name="inherit_id" ref="sale.view_order_form" />
+             <field name="arch" type="xml">
+                <xpath expr="//page[@string='Order Lines']/field[@name='order_line']/form[@string='Sales Order Lines']/div/field[@name='invoice_lines']" position="after">
+                    <label for="otc_lines"/>
+                    <field name="otc_lines" context="{'search_default_sold':1}"/>
+              </xpath>
+             </field>
+        </record>
+
+
+    </data>
+</openerp>
