@@ -1,77 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
-
-        <!-- VSO number Form-->
-          <record id="view_vso_number_form" model="ir.ui.view">
-            <field name="name">stock.production.lot.form</field>
-            <field name="model">stock.production.lot</field>
-            <field name="arch" type="xml">
-                <form string="VSO Number" version="7.0">
-                    <div class="oe_title">
-                        <label for="name" class="oe_edit_only"/>
-                        <h1>
-                            <field name="name"/>
-                        </h1>
-                    </div>
-                    <group>
-                        <group>
-                            <field name="product_id"/>
-                            <field name="stock_available"/>
-                        </group>
-                    </group>
-                </form>
-            </field>
-        </record>
-        <record id="view_vso_number_tree" model="ir.ui.view">
-            <field name="name">stock.production.lot.tree</field>
-            <field name="model">stock.production.lot</field>
-            <field name="arch" type="xml">
-                <tree string="VSO Number">
-                    <field name="name"/>
-                    <field name="product_id"/>
-                    <field name="stock_available"/>
-                </tree>
-            </field>
-        </record>
-
-        <record model="ir.ui.view" id="search_vso_number_filter">
-            <field name="name">VSO number Filter</field>
-            <field name="model">stock.production.lot</field>
-            <field name="arch" type="xml">
-                <search string="VSO number Filter">
-                    <field name="name" string="Product Lots" filter_domain="[('name','ilike',self)]"/>
-                    <filter icon="terp-check" name="available" string="Available" domain="[('available_qty', '&gt;', 0)]" help="Available Product Lots"/>
-                    <field name="product_id"/>
-                    <group expand="0" string="Group By...">
-                        <filter string="Product" icon="terp-accessories-archiver" domain="[]" context="{'group_by':'product_id'}"/>
-                    </group>
-                </search>
-            </field>
-        </record>
-
-        <record id="action_vso_number_form" model="ir.actions.act_window">
-            <field name="name">VSO Number</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">stock.production.lot</field>
-            <field name="view_type">form</field>
-            <field name="view_id" ref="view_vso_number_tree"/>
-            <field name="search_view_id" ref="search_vso_number_filter"/>
-            <field name="context">{}</field>
-            <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
-                Click to add a VSO number.
-              </p>
-            </field>
-        </record>
-        		
-
-        <menuitem action="action_vso_number_form" id="menu_vso_number_1"
-            parent="stock.menu_traceability" sequence="2"/>
-        
-        
-
 		<!--stock move -->
+        <record id="view_vso_number_form" model="ir.ui.view">
+            <field name="name">stock.production.lot.inherit.form</field>
+            <field name="model">stock.production.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_form"/>
+            <field name="arch" type="xml">
+		        <xpath expr="//notebook/page[@string='Revisions']" position="before">
+		            <page string="OTC">
+		                <field name="otc_ids" class="oe_highlight"/>
+                	</page>
+		        </xpath>
+		    </field>
+        </record>
+        <menuitem id="stock.menu_action_production_lot_form" name="VSO Number" action="stock.action_production_lot_form" parent="stock.menu_traceability"/>
 
         <record id="view_move_vso_form_stock_move" model="ir.ui.view">
             <field name="name">stock.move.form.vso.number</field>
