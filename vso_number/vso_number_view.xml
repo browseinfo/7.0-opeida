@@ -9,7 +9,7 @@
             <field name="arch" type="xml">
 		        <xpath expr="//notebook/page[@string='Revisions']" position="before">
 		            <page string="OTC">
-		                <field name="otc_ids" class="oe_highlight"/>
+		                <field name="otc_ids"/>
                 	</page>
 		        </xpath>
 		    </field>
@@ -171,8 +171,9 @@
                 <form string="VSO" version="7.0">
                     <group>
                     	<field name="product_id"/>
-                        <field name="vso_id" domain="[('product_id','=',product_id)]"/>
+                        <field name="vso_id" domain="[('product_id','=',product_id)]" on_change="onchange_vso_id(vso_id)"/>
                         <field name="product_qty" on_change="onchange_quantity(vso_id, product_id, product_qty,context)"/>
+		                <field name="otc_ids" string="OTC"/>
                     </group>
                 </form>
             </field>

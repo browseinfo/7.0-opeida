@@ -340,6 +340,7 @@ class vso_vso(osv.osv):
         'product_qty': fields.float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True),
         'order_line_id': fields.many2one('sale.order.line', 'order'),
         'product_id': fields.many2one('product.product', 'Product', required=True),
+        'otc_ids': fields.many2many('otc.license', 'otc_license_lot_rel', 'vso_id', 'otc_id','OTC'),
 
     }
     def onchange_quantity(self, cr, uid, ids, vso_id, product_id, product_qty, context=None):     
@@ -348,4 +349,14 @@ class vso_vso(osv.osv):
         	raise osv.except_osv(_('Warring!'),
                                                      _('Vso line Quantity "%s" is greater then vso available quantity "%s" .  Please  do not select more then vso available quantity"') % (product_qty, lot_obj_browse.stock_available))
         return product_qty
+    
+    def onchange_vso_id(self, cr, uid, ids, vso_id=False, context=None):
+        if not vso_id:
+            return {}
+        if vso_id:
+            vso = self.pool.get('vso.vso').browse(cr, uid, vso_id, context=context)
+            result = {
+                    'otc_ids': [(6,0,[x.id for x in vso.otc_ids])]
+                    }
+        return {'value': result}
 vso_vso()

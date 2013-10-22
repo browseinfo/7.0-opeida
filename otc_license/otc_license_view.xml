@@ -79,18 +79,5 @@
 
 
 
-    <record model="ir.ui.view" id="sale_expiry_sale_order_line_form">
-            <field name="name">sale.order.line.license.view.form</field>
-            <field name="model">sale.order</field>
-             <field name="inherit_id" ref="sale.view_order_form" />
-             <field name="arch" type="xml">
-                <xpath expr="//page[@string='Order Lines']/field[@name='order_line']/form[@string='Sales Order Lines']/div/field[@name='invoice_lines']" position="after">
-                    <label for="otc_lines"/>
-                    <field name="otc_lines" context="{'search_default_sold':1}"/>
-              </xpath>
-             </field>
-        </record>
-
-
     </data>
 </openerp>
