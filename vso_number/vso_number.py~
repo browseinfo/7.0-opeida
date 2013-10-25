@@ -161,8 +161,8 @@ class sale_order_line(osv.osv):
                 if vso and vso[2]:
                     qty += vso[2].get('product_qty')                    
             if qty > vso_qty:
-                raise osv.except_osv(_('Warring!'),
-                                             _('VSO product quantity is more then Order line product quantity'))
+                raise osv.except_osv(_('Warning!'),
+                                             _('Vso line Quantity "%s" is greater then total selected vso quantity "%s"."') % (qty, vso_qty))
                         
             
         box_obj = self.pool.get('box.box')
@@ -305,6 +305,7 @@ class sale_order(osv.osv):
             if line.product_id:
                 if line.product_id.type in ('product', 'consu'):
                     vso = False
+                    total_vso_qty = 0.00
                     if not picking_id:
                         picking_id = picking_obj.create(cr, uid, self._prepare_order_picking(cr, uid, order, context=context))
                     if line.vso_line_ids:
@@ -312,10 +313,11 @@ class sale_order(osv.osv):
                             if vso.vso_id.product_id != line.product_id:
                                 raise osv.except_osv(_('Warring!'),
                                                      _('Order line product "%s" is not same vso line product "%s".  Please select same product vso number"') % (line.product_id.name, vso.vso_id.product_id.name))
-                            if vso.vso_id.stock_available != vso.product_qty:
-                                raise osv.except_osv(_('Warring!'),
-                                                     _('Vso line Quantity "%s" is greater then vso available quantity "%s" .  Please  do not select more then vso available quantity"') % (vso.product_qty, vso.vso_id.stock_available))
-  
+                            total_vso_qty += vso.product_qty
+                        if total_vso_qty > line.product_uom_qty:
+                            raise osv.except_osv(_('Warning!'),
+                                                 _('Vso line Quantity "%s" is greater then total selected vso quantity "%s"."') % (total_vso_qty, line.product_uom_qty))
+
                             move_id = move_obj.create(cr, uid, self._prepare_vso_order_line_move(cr, uid, order, line, vso, picking_id, date_planned, context=context))
                     else:
                         move_id = move_obj.create(cr, uid, self._prepare_order_line_move(cr, uid, order, line, picking_id, date_planned, context=context))
