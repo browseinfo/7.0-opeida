@@ -27,6 +27,7 @@ from openerp import tools, SUPERUSER_ID
 from openerp.tools.translate import _
 from openerp import netsvc
 
+
 class otc_license(osv.osv):
     _name = 'otc.license'
     _rec_name = 'otc'
@@ -45,7 +46,6 @@ class otc_license(osv.osv):
         'activation_end_date': fields.date('Activation End Date', help="End Date Of Activation."),
         'expiry_date': fields.date('Expiry Date', help="Expiry Date."),
         'runtime': fields.char('Runtime', help='12 months validation'),
-        'lot_id': fields.many2one('stock.production.lot', 'VSO Number'),
         'users': fields.char('Number of User', size=64),
         'vso_id':fields.many2one('stock.production.lot','VSO Number',  select=True, domain="[('product_id','=',product_id)]"),
         'sold': fields.boolean('sold'),
@@ -71,14 +71,6 @@ class otc_license(osv.osv):
 
 otc_license()
 
-class sale_order_line(osv.osv):
-
-    _inherit = 'sale.order.line'
-    _columns = {
-            'otc_lines': fields.many2many('otc.license', 'sale_line_otc_license_rel', 'order_line_id', 'otc_id', 'License Lines'),
-
-    }
-sale_order_line()
 
 class sale_order(osv.osv):
     _inherit = 'sale.order'
@@ -88,12 +80,11 @@ class sale_order(osv.osv):
         otc_obj = self.pool.get('otc.license')
         wf_service = netsvc.LocalService('workflow')
         wf_service.trg_validate(uid, 'sale.order', ids[0], 'order_confirm', cr)
-        
         for sale in self.browse(cr, uid, ids, context):
-            for line in sale.order_line:
-                for otc in line.otc_lines:
-                    if otc:
-                        otc_obj.write(cr, uid, [otc.id], {'sold':True}, context)
+           for line in sale.order_line:
+               for otc in line.otc_lines:
+                   if otc:
+                       otc_obj.write(cr, uid, [otc.id], {'sold':True}, context)
                         
         # redisplay the record as a sales order
         view_ref = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'sale', 'view_order_form')

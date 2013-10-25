@@ -10,18 +10,43 @@ from openerp import tools
 import openerp.addons.decimal_precision as dp
 from openerp.tools.translate import _
 from openerp import netsvc
+import datetime
+import csv
 
 
 class stock_production_lot(osv.osv):
     _inherit = 'stock.production.lot'
     _columns = {
         'name': fields.char('VSO Number', size=64, required=True),
-        'otc_ids': fields.many2many('otc.license', 'otc_license_lot_rel', 'vso_id', 'otc_id'),
+#        'otc_ids': fields.many2many('otc.license', 'otc_license_lot_rel', 'vso_id', 'otc_id'),
+        'otc_ids' : fields.one2many('otc.license', 'vso_id', 'OTC'),
+        'csv_path' : fields.char('Path CSV', size=264),
         }
 
     _defaults = {
         'name': False,
     }
+    def import_csv(self, cr, uid, ids, context=None):
+		    license = self.pool.get('otc.license')
+		    aa = self.browse(cr,uid,ids)[0]
+		    now = datetime.datetime.now()
+		    if aa.csv_path:
+				try:
+					datafile = open(aa.csv_path, 'r')
+				except:
+					raise osv.except_osv(_('Error!'), _('Wrong CSV Path.'))
+		    datareader = csv.reader(datafile, delimiter='\t')
+		    print datareader
+		    data = []
+		    count = 1 
+		    for row in datareader:
+		    	if count == 1:
+		    		count = 0
+		    		continue
+		        data_create = {'otc':row[0],'vso_id':ids[0],
+		                           'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3]}
+		        print "data_create", data_create
+		        license.create(cr, uid,data_create,context=context)
 stock_production_lot()
 
 
@@ -354,9 +379,9 @@ class vso_vso(osv.osv):
         if not vso_id:
             return {}
         if vso_id:
-            vso = self.pool.get('vso.vso').browse(cr, uid, vso_id, context=context)
+            otc = self.pool.get('otc.license').search(cr, uid, [('vso_id','=', vso_id)], context=context)
             result = {
-                    'otc_ids': [(6,0,[x.id for x in vso.otc_ids])]
+                    'otc_ids': [(6,0,[x_id for x_id in otc])]
                     }
         return {'value': result}
 vso_vso()

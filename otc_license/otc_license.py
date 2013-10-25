@@ -27,6 +27,7 @@ from openerp import tools, SUPERUSER_ID
 from openerp.tools.translate import _
 from openerp import netsvc
 
+
 class otc_license(osv.osv):
     _name = 'otc.license'
     _rec_name = 'otc'
@@ -45,9 +46,8 @@ class otc_license(osv.osv):
         'activation_end_date': fields.date('Activation End Date', help="End Date Of Activation."),
         'expiry_date': fields.date('Expiry Date', help="Expiry Date."),
         'runtime': fields.char('Runtime', help='12 months validation'),
-        'lot_id': fields.many2one('stock.production.lot', 'VSO Number'),
         'users': fields.char('Number of User', size=64),
-        'vso_id':fields.many2one('stock.production.lot','VSO Number',  select=True, required=True, domain="[('product_id','=',product_id)]"),
+        'vso_id':fields.many2one('stock.production.lot','VSO Number',  select=True, domain="[('product_id','=',product_id)]"),
         'sold': fields.boolean('sold'),
         
     }

@@ -19,11 +19,11 @@
         'vso_sequence.xml',
         'vso_number_view.xml',
     ],
+    'css' : ['static/src/css/vos.css'],
     'demo': [],
     'test': [ ],
     'installable': True,
     'application': True,
     'auto_install': False,
-    'css': [ ],
 }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
