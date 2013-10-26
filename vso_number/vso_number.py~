@@ -381,7 +381,7 @@ class vso_vso(osv.osv):
         if not vso_id:
             return {}
         if vso_id:
-            otc = self.pool.get('otc.license').search(cr, uid, [('vso_id','=', vso_id)], context=context)
+            otc = self.pool.get('otc.license').search(cr, uid, [('vso_id','=', vso_id), ('sold', '=', False)], context=context)
             result = {
                     'otc_ids': [(6,0,[x_id for x_id in otc])]
                     }
