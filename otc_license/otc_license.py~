@@ -32,12 +32,12 @@ class otc_license(osv.osv):
     _name = 'otc.license'
     _rec_name = 'otc'
 
-    def _check_sold(self, cr, uid, ids):
-        for otc in self.browse(cr, uid, ids):
-            otc_ids = self.search(cr, uid, [('sold', '=', True)])
-            if otc_ids:
-                return False
-        return True
+#    def _check_sold(self, cr, uid, ids):
+#        for otc in self.browse(cr, uid, ids):
+#            otc_ids = self.search(cr, uid, [('sold', '=', True)])
+#            if otc_ids:
+#                return False
+#        return True
 
     _columns = {
         'product_id': fields.many2one('product.product', 'Product'),
@@ -55,9 +55,9 @@ class otc_license(osv.osv):
         'sold': False,
     }
 
-    _constraints = [
-        (_check_sold, 'You can not sell OTC license which already sold!', ['otc','product_id']),
-    ]
+#    _constraints = [
+#        (_check_sold, 'You can not sell OTC license which already sold!', ['otc','product_id']),
+#    ]
 
     def on_change_product_id(self, cr, uid, ids, product_id, context=None):
         values = {}
@@ -82,9 +82,11 @@ class sale_order(osv.osv):
         wf_service.trg_validate(uid, 'sale.order', ids[0], 'order_confirm', cr)
         for sale in self.browse(cr, uid, ids, context):
            for line in sale.order_line:
-               for otc in line.otc_lines:
-                   if otc:
-                       otc_obj.write(cr, uid, [otc.id], {'sold':True}, context)
+               if line.vso_line_ids:
+                   for vso in line.vso_line_ids:
+                       if vso.otc_ids:
+                           for otc in vso.otc_ids:
+                               otc_obj.write(cr, uid, [otc.id], {'sold':True}, context)
                         
         # redisplay the record as a sales order
         view_ref = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'sale', 'view_order_form')

@@ -318,7 +318,7 @@ class sale_order(osv.osv):
                             raise osv.except_osv(_('Warning!'),
                                                  _('Vso line Quantity "%s" is greater then total selected vso quantity "%s"."') % (total_vso_qty, line.product_uom_qty))
 
-                            move_id = move_obj.create(cr, uid, self._prepare_vso_order_line_move(cr, uid, order, line, vso, picking_id, date_planned, context=context))
+                        move_id = move_obj.create(cr, uid, self._prepare_vso_order_line_move(cr, uid, order, line, vso, picking_id, date_planned, context=context))
                     else:
                         move_id = move_obj.create(cr, uid, self._prepare_order_line_move(cr, uid, order, line, picking_id, date_planned, context=context))
                 else:
@@ -367,7 +367,7 @@ class vso_vso(osv.osv):
         'product_qty': fields.float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True),
         'order_line_id': fields.many2one('sale.order.line', 'order'),
         'product_id': fields.many2one('product.product', 'Product', required=True),
-        'otc_ids': fields.many2many('otc.license', 'otc_license_lot_rel', 'vso_id', 'otc_id','OTC'),
+        'otc_ids': fields.many2many('otc.license', id1='vso_vso_id', id2='otc_id',string='OTC'),
 
     }
     def onchange_quantity(self, cr, uid, ids, vso_id, product_id, product_qty, context=None):     
