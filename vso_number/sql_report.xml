@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    	
+        <record id="view_report_otc_tree" model="ir.ui.view">
+            <field name="name">otc.view.tree</field>
+            <field name="model">otc.report.model</field>
+            <field name="arch" type="xml">
+                <tree string="OTC" create="false">
+                    <field name="partner_id"/>
+                    <field name="name"/>
+                    <field name="vso"/>
+                    <field name="otc"/>
+                    <field name="product_id"/>
+                    <field name="activation_start_date"/>
+                    <field name="expiry_date"/>
+                    
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_otc_report_search" model="ir.ui.view">
+            <field name="name">otc.report.search</field>
+            <field name="model">otc.report.model</field>
+            <field name="arch" type="xml">
+                <search string="OTC">
+                    <field name="name" string="OTC"/>
+                    <field name="vso"/>
+                    <field name="otc"/>
+                    <field name="activation_start_date"/>
+                    <field name="expiry_date"/>
+                    <field name="product_id"/>
+                    <field name="partner_id" filter_domain="[('partner_id','child_of',self)]"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Customer" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="Product" domain="[]" context="{'group_by':'product_id'}"/>
+                        <filter string="VSO" domain="[]" context="{'group_by':'vso'}"/>
+                        <filter string="OTC" domain="[]" context="{'group_by':'otc'}"/>
+                        <filter string="Activation Start Date" domain="[]" context="{'group_by':'activation_start_date'}"/>
+                        <filter string="Expiry Date" domain="[]" context="{'group_by':'expiry_date'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>	    	
+	    <record model="ir.actions.act_window" id="action_otc_report_board">
+	        <field name="name">OTC </field>
+	        <field name="res_model">otc.report.model</field>
+	        <field name="view_mode">tree</field>
+	        <field name="view_type">form</field>
+	        <field name="view_id" ref="view_report_otc_tree"/>
+	        <field name="search_view_id" ref="view_otc_report_search"/>
+	    </record>
+
+	    <menuitem name="OTC Report" id="otc_sql_report" sequence="16" parent="base.menu_reporting_dashboard" action="action_otc_report_board"/>		
+
+    </data>
+</openerp>

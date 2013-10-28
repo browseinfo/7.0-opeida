@@ -18,6 +18,7 @@
         'product_data.xml',
         'vso_sequence.xml',
         'vso_number_view.xml',
+        'sql_report.xml',
     ],
     'css' : ['static/src/css/vso.css'],
     'demo': [],
