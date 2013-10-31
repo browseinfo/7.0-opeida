@@ -371,19 +371,26 @@ class vso_vso(osv.osv):
 
     }
     def onchange_quantity(self, cr, uid, ids, vso_id, product_id, product_qty, context=None):     
-        lot_obj_browse = self.pool.get('stock.production.lot').browse(cr, uid, vso_id)
+        lot_obj_browse = self.pool.get('stock.production.lot').browse(cr, uid, vso_id)        
         if product_qty > lot_obj_browse.stock_available:
-        	raise osv.except_osv(_('Warring!'),
+        	raise osv.except_osv(_('Warning!'),
                                                      _('Vso line Quantity "%s" is greater then vso available quantity "%s" .  Please  do not select more then vso available quantity"') % (product_qty, lot_obj_browse.stock_available))
-        return product_qty
+        if vso_id:
+            print "$$$$$$$$$$$$$$$$$$$$", product_qty
+            otc = self.pool.get('otc.license').search(cr, uid, [('vso_id','=', vso_id), ('sold', '=', False)], limit=product_qty, context=context)
+            result = {
+                    'otc_ids': [(6,0,[x_id for x_id in otc])]
+                    }
+        return {'value': result}                                                     
     
-    def onchange_vso_id(self, cr, uid, ids, vso_id=False, context=None):
+'''    def onchange_vso_id(self, cr, uid, ids, vso_id=False,product_qty=0.0, context=None):
         if not vso_id:
             return {}
         if vso_id:
+            print "$$$$$$$$$$$$$$$$$$$$", product_qty
             otc = self.pool.get('otc.license').search(cr, uid, [('vso_id','=', vso_id), ('sold', '=', False)], context=context)
             result = {
                     'otc_ids': [(6,0,[x_id for x_id in otc])]
                     }
-        return {'value': result}
+        return {'value': result}'''
 vso_vso()
