@@ -108,7 +108,6 @@ class month_partner(osv.osv_memory):
                 dt = res[0].split()
                 create_date = datetime.strptime(dt[0], '%Y-%m-%d').date()
                 if date_st < create_date and  create_date <date_end:
-                    print "=======partner========", partner.id
                     part_ids.append(partner.id)
       
         if not part_ids:

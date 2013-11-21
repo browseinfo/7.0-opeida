@@ -18,32 +18,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+import partner_inactive_cron
+import wizard
+import report
 
-{
-    'name': 'Inactive partner report',
-    'version': '1.0',
-    'category': 'Partner',
-    'sequence': 14,
-    'summary': 'Inactive partner report',
-    'description': """
-
-    """,
-    'author': 'OpenERP SA',
-    'website': 'http://www.openerp.com',
-    'images': [],
-    'depends': ['sale','crm'],
-#     'data': [
-#          'partner_inactive_data.xml',
-#         ],
-
-    'data': [
-        'wizard/inactive_partner_wizard_view.xml',
-    ],
-    'demo': [],
-    'test': [],
-    'installable': True,
-    'auto_install': False,
-    'application': True,
-}
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
-
