@@ -72,7 +72,6 @@ class otc_license(osv.osv):
         return {'value' : values}
 
     def do_run_scheduler_otc_expired(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
-        print "\n\nHello"
         """Scheduler for Task reminder
         @param self: The object pointer
         @param cr: the current row, from the database cursor,

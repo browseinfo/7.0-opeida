@@ -101,6 +101,7 @@ class sale_order_line(osv.osv):
         'box_id':fields.many2one('box.box','Boxes'),
         'qr_no':fields.char('QR Number',size=64),
         'vso_line_ids': fields.one2many('vso.vso', 'order_line_id', 'VSO Order Lines'),
+	'with_box': fields.boolean('With Box'),
     }
 
     _defaults = {
@@ -368,16 +369,21 @@ class vso_vso(osv.osv):
         'order_line_id': fields.many2one('sale.order.line', 'order'),
         'product_id': fields.many2one('product.product', 'Product', required=True),
         'otc_ids': fields.many2many('otc.license', id1='vso_vso_id', id2='otc_id',string='OTC'),
-
     }
     def onchange_quantity(self, cr, uid, ids, vso_id, product_id, product_qty, context=None):     
-        lot_obj_browse = self.pool.get('stock.production.lot').browse(cr, uid, vso_id)        
+        lot_obj_browse = self.pool.get('stock.production.lot').browse(cr, uid, vso_id)
+	product_obj_browse = self.pool.get('product.product').browse(cr, uid, product_id)
+	print "\n\nProduct", product_obj_browse, product_obj_browse.no_otc
+	if product_obj_browse.no_otc <= 0:
+		raise osv.except_osv(_('Warning!'),
+        		_('Enter Vaild OTC'))
+	
         if product_qty > lot_obj_browse.stock_available:
         	raise osv.except_osv(_('Warning!'),
-                                                     _('Vso line Quantity "%s" is greater then vso available quantity "%s" .  Please  do not select more then vso available quantity"') % (product_qty, lot_obj_browse.stock_available))
+			_('Vso line Quantity "%s" is greater then vso available quantity "%s" .  Please  do not select more then vso available quantity"') % (product_qty, lot_obj_browse.stock_available))
+	
         if vso_id:
-            print "$$$$$$$$$$$$$$$$$$$$", product_qty
-            otc = self.pool.get('otc.license').search(cr, uid, [('vso_id','=', vso_id), ('sold', '=', False)], limit=product_qty, context=context)
+            otc = self.pool.get('otc.license').search(cr, uid, [('vso_id','=', vso_id), ('sold', '=', False)], limit=(product_qty * product_obj_browse.no_otc), context=context)
             result = {
                     'otc_ids': [(6,0,[x_id for x_id in otc])]
                     }
