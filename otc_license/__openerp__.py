@@ -38,7 +38,7 @@ OTC License Expiry
         'security/ir.model.access.csv',
         'otc_license_view.xml',
         'otc_licence_board.xml',
-       # 'otc_license_data.xml',
+        'otc_license_data.xml',
     ],
     'demo': [],
     'test': [],

@@ -49,6 +49,8 @@ class otc_license(osv.osv):
         'users': fields.char('Number of User', size=64),
         'vso_id':fields.many2one('stock.production.lot','VSO Number',  select=True, domain="[('product_id','=',product_id)]"),
         'sold': fields.boolean('sold'),
+        'partner_id': fields.many2one('res.partner', 'Partner'),
+        'so_name': fields.char('Sale Order Name'),
         
     }
     _defaults = {
@@ -69,6 +71,55 @@ class otc_license(osv.osv):
             }
         return {'value' : values}
 
+    def do_run_scheduler_otc_expired(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
+        print "\n\nHello"
+        """Scheduler for Task reminder
+        @param self: The object pointer
+        @param cr: the current row, from the database cursor,
+        @param uid: the current user's ID for security checks,
+        @param ids: List of calendar alarm's IDs.
+        @param use_new_cursor: False or the dbname
+        @param context: A standard dictionary for contextual values
+        """
+        if context is None:
+            context = {}
+        mail_mail = self.pool.get('mail.mail')
+        line_ids = []
+        mail_to = ""
+        mail_ids = []   
+        
+        today = time.strftime('%Y-%m-%d')
+        next_7th_date = datetime.strptime(today, '%Y-%m-%d') + relativedelta(days=7)
+        next_date =  next_7th_date.strftime('%Y-%m-%d')
+
+        admin_email = self.pool.get('res.users').browse(cr, uid, [1])[0].email
+        
+        #order_ids = self.search(cr, uid, [('state', 'not in', ('draft','sent', 'done'))], context=context)
+        otc_ids = self.search(cr, uid, [('sold', '=', True)], context=context)
+        for otc in self.browse(cr, uid, otc_ids, context=context):
+            mail_to = otc.partner_id.email
+            if today < otc.expiry_date and otc.expiry_date < next_date:
+                if otc.partner_id.email:
+                    sub = '[Product OTC Date Expired]'
+
+                    body = """
+                    Hello ,
+                   
+                    Just a friendly reminder you , That your Sale Order Number %s, VSO Number %s, and OTC number %s of Product %s is Expired on Date: %s.""" % (otc.so_name, otc.vso_id.name, otc.otc, otc.product_id.name,otc.expiry_date)
+                    
+                    if mail_to:
+                        vals = {
+                                'state': 'outgoing',
+                                'subject': sub,
+                                'body_html': body,
+                                'email_to': mail_to,
+                                'email_from': admin_email,
+                            }
+                       
+                        mail_ids.append(mail_mail.create(cr, uid, vals, context=context))
+                        mail_mail.send(cr, uid, mail_ids, auto_commit=True, context=context)
+        return True
+
 otc_license()
 
 
@@ -86,7 +137,7 @@ class sale_order(osv.osv):
                    for vso in line.vso_line_ids:
                        if vso.otc_ids:
                            for otc in vso.otc_ids:
-                               otc_obj.write(cr, uid, [otc.id], {'sold':True}, context)
+                               otc_obj.write(cr, uid, [otc.id], {'sold':True, 'partner_id' : sale.partner_id.id, 'so_name' : sale.name}, context)
                         
         # redisplay the record as a sales order
         view_ref = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'sale', 'view_order_form')

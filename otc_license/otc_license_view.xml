@@ -10,9 +10,11 @@
                     <filter string="Unsold" name="sold" domain="[('sold','=', False),]"/>
                     <field name="product_id"/>
                     <group expand="0" string="Group By...">
-                        <filter string="vso" domain="[]" context="{'group_by':'vso_id'}" help="vso reference"/>
+                        <filter string="VSO" domain="[]" context="{'group_by':'vso_id'}" help="vso reference"/>
                         <filter string="Product"  domain="[]" context="{'group_by':'product_id'}"/>
                         <filter string="Sold"  domain="[]" context="{'group_by':'sold'}"/>
+			<filter string="Sale Order"  domain="[]" context="{'group_by':'so_name'}"/>
+			<filter string="Partner"  domain="[]" context="{'group_by':'partner_id'}"/>
                     </group>
                 </search>
             </field>
@@ -54,6 +56,8 @@
         <tree string="OTC License" colors="gray:sold==True;">
             <field name="product_id"/>
             <field name="otc"/>
+	    <field name="partner_id"/>
+	    <field name="so_name"/>
             <field name="activation_start_date"/>
             <field name="activation_end_date"/>
             <field name="expiry_date"/>
