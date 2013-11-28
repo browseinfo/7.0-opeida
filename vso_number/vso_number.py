@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-
 import datetime
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import time
-
 from openerp.osv import fields, osv
 from openerp import tools
 import openerp.addons.decimal_precision as dp
@@ -28,31 +26,16 @@ class stock_production_lot(osv.osv):
     }
 
     def import_csv(self, cr, uid, ids, context=None):
-            obj_seq = self.pool.get('ir.sequence')
             license = self.pool.get('otc.license')
             product = self.pool.get('stock.production.lot').browse(cr,uid,ids[0]).product_id.id
             vso_obj = self.pool.get('vso.vso')
-            qr_obj = self.pool.get('qr.number')
             aa = self.browse(cr,uid,ids)[0]
-            ot = license.browse(cr,uid,ids)[0]
-            vso = aa.name[3:8]+':'
-            st_number = obj_seq.next_by_code(cr, uid, 'qr.number', context=context)
-            print "st_number=========",st_number
-            #if vso:
-            today = time.strftime('%d%m%y')
-            qr_id = qr_obj.create(cr, uid, {'product_id': product}, context=context)
-            qr_seq = qr_obj.browse(cr, uid, qr_id).name
-            qr_code = vso + today + ':' + qr_seq
-
-            aa = self.browse(cr,uid,ids)[0]
-            now = datetime.datetime.now()
             if aa.csv_path:
 		        try:
 			        datafile = open(aa.csv_path, 'r')
 		        except:
 			        raise osv.except_osv(_('Error!'), _('Wrong CSV Path.'))
             datareader = csv.reader(datafile, delimiter='\t')
-            print datareader
             data = []
             count = 1 
             row_len = 1
@@ -60,41 +43,11 @@ class stock_production_lot(osv.osv):
             	if count == 1:
             		count = 0
             		continue
-                qr_code = vso + today + ':' + qr_seq
-                if row_len > 1:
-                    print "\n\n***",row_len
-                    qr_code = vso + today + ':' + str(int(qr_seq)+1)
-                    qr_seq = str(int(qr_seq)+1)
                 data_create = {'otc':row[0],'vso_id':ids[0],
-                                   'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3], 'qr_no':qr_code}
-                row_len = row_len + 1
-                print "data_create", data_create
+                                   'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3]}
                 license.create(cr, uid,data_create,context=context)
+
 stock_production_lot()
-
-
-'''class stock_move(osv.osv):
-    _inherit = 'stock.move'
-
-    _columns = {
-        'vso_id':fields.many2one('stock.production.lot','VSO Number',  select=True)
-        }
-stock_move()'''
-
-class qr_number(osv.osv):
-    _name = 'qr.number'
-    _columns = {
-        'name': fields.char('QR Number', size=64, required=True),
-        'product_id':fields.many2one('product.product', 'Product')
-        }
-
-    _defaults = {
-         'name': lambda s,c,u,ctx={}: s.pool.get('ir.sequence').get(c, u, 'qr.number'),
-    }
-    _sql_constraints = [
-        ('name', 'unique (name)', 'The QR Number must be unique !'),]
-    
-qr_number()
 
 class purchase_order_line(osv.osv):
     _inherit='purchase.order.line'
@@ -120,61 +73,41 @@ purchase_order()
 class sale_order_line(osv.osv):
     _inherit='sale.order.line'
     _columns = {
-        'package_type': fields.selection([('normal', 'Normally'), ('box', 'Boxes'), ('qr', 'QR without box')], 'Package Type', select=True),
         'box_id':fields.many2one('box.box','Boxes'),
-        'qr_no':fields.char('QR Number',size=64),
         'vso_line_ids': fields.one2many('vso.vso', 'order_line_id', 'VSO Order Lines'),
 	'with_box': fields.boolean('With Box'),
     }
 
-    _defaults = {
-        'package_type': 'normal'
-    }
+#    def write(self, cr, uid, ids, vals, context=None):
+#        res=super(sale_order_line, self).write(cr, uid, ids, vals, context=context)
+#        box_obj = self.pool.get('box.box')
+#        vso_obj = self.pool.get('stock.production.lot')
+#        sol = self.browse(cr, uid, ids, context=context)[0]
+#        order = sol.order_id
+#        prod_ids = self.pool.get('product.product').search(cr, uid, [('description','=','Box'),('type','=','product'),#('procure_method','=','make_to_order'),('supply_method','=','buy')], context=context)
+#        for p in self.pool.get('product.product').browse(cr, uid, prod_ids):
+#            if p.name == 'Box':
+#                box=p.id
+#        if vals.get('vso_id'):
+#            vso=vals.get('vso_id')
+#            vso = self.pool.get('stock.production.lot').browse(cr, uid, vso, context=context)
+#            qr=self.browse(cr, uid, ids, context=context)[0].qr_no
+#            if vso.name and qr:
+#                qr_rec=qr.split(':')
+#                if len(qr_rec)==3:
+#                    qr_rec[0]=vso.name[0:5]
+#                    new_qr=qr_rec[0]+':'+qr_rec[1]+':'+qr_rec[2]
+#                else:
+#                    new_qr=vso.name+':'+qr
+#                vals.update({'qr_no':new_qr})
+#        if vals.get('package_type') and vals.get('package_type') == 'box':
+#            for x in order.order_line:
+#                if x.product_id.id == box:
+#                    box_qty = x.product_uom_qty
+#                    vals.update({'product_uom_qty':box_qty+1})
+#                    return res and super(sale_order_line, self).write(cr, uid, [x.id], vals, context=context)
+#        return res
 
-    def write(self, cr, uid, ids, vals, context=None):
-        res=super(sale_order_line, self).write(cr, uid, ids, vals, context=context)
-        box_obj = self.pool.get('box.box')
-        vso_obj = self.pool.get('stock.production.lot')
-        sol = self.browse(cr, uid, ids, context=context)[0]
-        order = sol.order_id
-        prod_ids = self.pool.get('product.product').search(cr, uid, [('description','=','Box'),('type','=','product'),('procure_method','=','make_to_order'),('supply_method','=','buy')], context=context)
-        for p in self.pool.get('product.product').browse(cr, uid, prod_ids):
-            if p.name == 'Box':
-                box=p.id
-        if vals.get('vso_id'):
-            vso=vals.get('vso_id')
-            vso = self.pool.get('stock.production.lot').browse(cr, uid, vso, context=context)
-            qr=self.browse(cr, uid, ids, context=context)[0].qr_no
-            if vso.name and qr:
-                qr_rec=qr.split(':')
-                if len(qr_rec)==3:
-                    qr_rec[0]=vso.name[0:5]
-                    new_qr=qr_rec[0]+':'+qr_rec[1]+':'+qr_rec[2]
-                else:
-                    new_qr=vso.name+':'+qr
-                vals.update({'qr_no':new_qr})
-        if vals.get('package_type') and vals.get('package_type') == 'box':
-            for x in order.order_line:
-                if x.product_id.id == box:
-                    box_qty = x.product_uom_qty
-                    vals.update({'product_uom_qty':box_qty+1})
-                    return res and super(sale_order_line, self).write(cr, uid, [x.id], vals, context=context)
-        return res
-
-    def onchange_vso(self, cr, uid, ids, vso, qr, context=None):
-        vals = {}
-        if vso:
-            vso = self.pool.get('stock.production.lot').browse(cr, uid, vso, context=context)
-            if vso.name and qr:
-                qr_rec=qr.split(':')
-                if len(qr_rec)==3:
-                    qr_rec[0]=vso.name[0:5]
-                    new_qr=qr_rec[0]+':'+qr_rec[1]+':'+qr_rec[2]
-                else:
-                    new_qr=vso.name+':'+qr
-                vals['qr_no'] = new_qr
-                self.write(cr, uid, ids, vals, context)
-        return {'value': vals}
     def create(self, cr, uid, vals, context=None):
         vso_obj = self.pool.get('vso.vso')
         qty = 0.0
@@ -187,29 +120,6 @@ class sale_order_line(osv.osv):
             if qty > vso_qty:
                 raise osv.except_osv(_('Warning!'),
                                              _('Vso line Quantity "%s" is greater then total selected vso quantity "%s"."') % (qty, vso_qty))
-                        
-            
-        box_obj = self.pool.get('box.box')
-        vso_obj = self.pool.get('stock.production.lot')
-        qr_obj = self.pool.get('qr.number')
-        if vals.get('package_type'):
-            pkg_type = vals['package_type']
-            today = time.strftime('%d%m%y')
-            if vals.get('order_id'):
-                so = vals.get('order_id')
-                seq = self.pool.get('sale.order').browse(cr, uid, so, context=context).name
-#                vso_ids = vso_obj.search(cr, uid, [('product_id','=',vals['product_id'])])
-                vso=''
-            if vals.get('vso_id'):
-                vso_id=vals.get('vso_id')
-                vso = vso_obj.browse(cr, uid, vso_id).name[0:5]+':'
-            qr_id = qr_obj.create(cr, uid, {'product_id': vals['product_id']}, context=context)
-            qr_seq = qr_obj.browse(cr, uid, qr_id).name
-            #vso_obj.write(cr, uid, vso_id, {'name':vso_seq+seq}, context=context)
-            vals.update({'qr_no':vso+today+':'+qr_seq})
-            if pkg_type == 'box':
-                box_id = box_obj.create(cr, uid, {'name': today, 'product_id': vals['product_id']}, context=context)
-                vals.update({'box_id':box_id})
         return super(sale_order_line, self).create(cr, uid, vals, context=context)
 
 
@@ -248,53 +158,6 @@ class sale_order(osv.osv):
             'company_id': order.company_id.id,
             'price_unit': line.product_id.standard_price or 0.0
         }
-
-
-    def write(self, cr, uid, ids, vals, context=None):
-        order = self.browse(cr, uid, ids, context=context)[0]
-        sol_obj = self.pool.get('sale.order.line')
-        prod_ids = self.pool.get('product.product').search(cr, uid, [('description','=','Box'),('type','=','product'),('procure_method','=','make_to_order'),('supply_method','=','buy')], context=context)
-        for p in self.pool.get('product.product').browse(cr, uid, prod_ids):
-            if p.name=='Box':
-                box=p.id
-        box_no = 0
-        box_line_id = False
-        if box:
-            if order.state == 'draft':
-                for line in order.order_line:
-                    if line.product_id.id == box:
-                        box_line_id = line.id
-                        box_qty = line.product_uom_qty or 1
-                if not box_line_id == False:
-                    for x in vals['order_line']:
-                        if type(x[-1]) == dict and x[-1]['package_type'] == 'box':
-                            sol_obj.write(cr, uid, [box_line_id], {'product_uom_qty':box_qty+1}, context=context)
-                elif box_no > 0:
-                    prod = self.pool.get('product.product').browse(cr, uid, box)
-                    rec = {'name':'box','product_id': box, 'order_id': ids[0], 'price_unit':1, 'type':'make_to_order', 'product_uom_qty':box_no, 'state':'draft'}
-                    sol_obj.create(cr, uid, rec, context=context)
-        return super(sale_order, self).write(cr, uid, ids, vals, context=context)
-
-    def create(self, cr, uid, vals, context=None):
-        so_id = super(sale_order, self).create(cr, uid, vals, context=context)
-            
-        prod_ids = self.pool.get('product.product').search(cr, uid, [('description','=','Box'),('type','=','product'),('procure_method','=','make_to_order'),('supply_method','=','buy')], context=context)
-        for p in self.pool.get('product.product').browse(cr, uid, prod_ids):
-            if p.name=='Box':
-                box=p.id
-        box_no = 0
-        if box:
-            if vals.get('order_line'):
-                for line in vals.get('order_line'):
-                    if line[-1]['package_type'] == 'box':
-                        box_no+=1
-                if box_no > 0:
-                    prod = self.pool.get('product.product').browse(cr, uid, box)
-                    rec = {'name':'box','product_id': box, 'order_id': so_id, 'price_unit':1, 'type':'make_to_order', 'product_uom_qty':box_no, 'state':'draft'}
-                    box_line = self.pool.get('sale.order.line').create(cr, uid, rec, context=context)
-        return so_id
-
-
 
     def _create_pickings_and_procurements(self, cr, uid, order, order_lines, picking_id=False, context=None):
         """Create the required procurements to supply sales order lines, also connecting
