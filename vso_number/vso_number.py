@@ -26,25 +26,53 @@ class stock_production_lot(osv.osv):
     }
 
     def import_csv(self, cr, uid, ids, context=None):
+            obj_seq = self.pool.get('ir.sequence')
             license = self.pool.get('otc.license')
             product = self.pool.get('stock.production.lot').browse(cr,uid,ids[0]).product_id.id
             vso_obj = self.pool.get('vso.vso')
             aa = self.browse(cr,uid,ids)[0]
+            ot = license.browse(cr,uid,ids)[0]
+            cur_vso = aa.name
+            vso = aa.name[3:8]+':'
+            cr.execute('select name from stock_production_lot')
+            res = cr.fetchall()
+            total_len = len(res)-1
+            vsoname = res[total_len][0]
+            today = time.strftime('%d%m%y')
+            seq = obj_seq.next_by_code(cr, uid, 'otc.license', context=context)
+            aa = self.browse(cr,uid,ids)[0]
+            now = datetime.datetime.now()
             if aa.csv_path:
-		        try:
-			        datafile = open(aa.csv_path, 'r')
-		        except:
-			        raise osv.except_osv(_('Error!'), _('Wrong CSV Path.'))
+                try:
+                    datafile = open(aa.csv_path, 'r')
+                except:
+                    raise osv.except_osv(_('Error!'), _('Wrong CSV Path.'))
             datareader = csv.reader(datafile, delimiter='\t')
+            print datareader
             data = []
             count = 1 
             row_len = 1
+
             for row in datareader:
-            	if count == 1:
-            		count = 0
-            		continue
+                if count == 1:
+                    count = 0
+                    continue
+                qr_code = vso + today + ':'+seq
+
+#                 if str(cur_vso) != str(vsoname):
+#                     seq = str(001 + 1)
+#                     print "11111111111111111",seq
+#                     qr_code = vso + today + ':' + str('000') + str(int(seq))
+#                 else:
+#                     qr_code = vso + today + ':' + str('000') + str(int(seq))
+                if row_len > 1:
+                    seq = str(int(seq)+1)
+                    qr_code = vso + today + ':' + str('000') + str(int(seq))
+    
+                        
                 data_create = {'otc':row[0],'vso_id':ids[0],
-                                   'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3]}
+                               'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3], 'qr_no':qr_code}
+                row_len = row_len + 1
                 license.create(cr, uid,data_create,context=context)
 
 stock_production_lot()
