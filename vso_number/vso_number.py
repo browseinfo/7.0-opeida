@@ -39,7 +39,6 @@ class stock_production_lot(osv.osv):
             total_len = len(res)-1
             vsoname = res[total_len][0]
             today = time.strftime('%d%m%y')
-            seq = obj_seq.next_by_code(cr, uid, 'otc.license', context=context)
             aa = self.browse(cr,uid,ids)[0]
             now = datetime.datetime.now()
             if aa.csv_path:
@@ -57,18 +56,18 @@ class stock_production_lot(osv.osv):
                 if count == 1:
                     count = 0
                     continue
+                seq = obj_seq.next_by_code(cr, uid, 'otc.license', context=context)
                 qr_code = vso + today + ':'+seq
-
 #                 if str(cur_vso) != str(vsoname):
 #                     seq = str(001 + 1)
 #                     print "11111111111111111",seq
 #                     qr_code = vso + today + ':' + str('000') + str(int(seq))
 #                 else:
 #                     qr_code = vso + today + ':' + str('000') + str(int(seq))
-                if row_len > 1:
-                    seq = str(int(seq)+1)
-                    qr_code = vso + today + ':' + str('000') + str(int(seq))
-    
+#                 if row_len > 1:
+#                     seq = str(int(seq)+1)
+#                     qr_code = vso + today + ':' + str('00') + str(int(seq))
+#                     seq = str(int(seq)+1)
                         
                 data_create = {'otc':row[0],'vso_id':ids[0],
                                'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3], 'qr_no':qr_code}
