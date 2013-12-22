@@ -38,13 +38,25 @@ class inactive_partner_report(report_sxw.rml_parse):
         order_line_obj = self.pool.get('res.partner')
         res = []
         for line in order_line_obj.browse(self.cr,self.uid, part_ids):
+            self.cr.execute('select count(crm_lead.id) from crm_lead where crm_lead.partner_name = %s',([line.name]))
+            lead = self.cr.fetchall()[0][0] or 0
+
+            self.cr.execute('select count(sale_order.id) from sale_order where sale_order.partner_id = %s',([line.id]))
+            sale = self.cr.fetchall()[0][0] or 0
+
+            self.cr.execute('select sum(amount_untaxed) from sale_order where sale_order.partner_id = %s',([line.id]))
+            total_sale = self.cr.fetchall()[0][0] or 0
+
             res.append({
                         'name': line.name or '', 
                         'phone': line.phone or '',
                         'mobile': line.mobile,
                         'email': line.email,
                         'fax': line.fax or '',
-                        
+                        'lead': lead,
+                        'sale': sale,
+                        'total': total_sale,
+
                         })
         return res
 

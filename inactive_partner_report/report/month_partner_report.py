@@ -30,6 +30,9 @@ class month_partner_report(report_sxw.rml_parse):
         self.localcontext.update({
              'time': time,
              'do_line':self._do_line,
+#             'total_no_lead':self._total_no_lead,
+#             'total_no_sale':self._total_no_sale
+ #            'sum_sale_amount':self._sum_sale_amount
         })
 
     
@@ -38,13 +41,26 @@ class month_partner_report(report_sxw.rml_parse):
         order_line_obj = self.pool.get('res.partner')
         res = []
         for line in order_line_obj.browse(self.cr,self.uid, part_ids):
+            self.cr.execute('select count(crm_lead.id) from crm_lead where crm_lead.partner_name = %s',([line.name]))
+            lead = self.cr.fetchall()[0][0] or 0
+
+            self.cr.execute('select count(sale_order.id) from sale_order where sale_order.partner_id = %s',([line.id]))
+            sale = self.cr.fetchall()[0][0] or 0
+
+            self.cr.execute('select sum(amount_untaxed) from sale_order where sale_order.partner_id = %s',([line.id]))
+            total_sale = self.cr.fetchall()[0][0] or 0
+             
+
             res.append({
                         'name': line.name or '', 
                         'phone': line.phone or '',
                         'email': line.email,
+                        'lead': lead,
+                        'sale': sale,
+                        'total': total_sale
                         })
         return res
-
+    
 report_sxw.report_sxw(
     'report.month.partner.report',
     'res.partner',

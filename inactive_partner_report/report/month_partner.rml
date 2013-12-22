@@ -16,6 +16,9 @@
       <lineStyle kind="LINEBELOW" colorName="#000000" start="0,-1" stop="0,-1"/>
       <lineStyle kind="LINEBELOW" colorName="#000000" start="1,-1" stop="1,-1"/>
       <lineStyle kind="LINEBELOW" colorName="#000000" start="2,-1" stop="2,-1"/>
+      <lineStyle kind="LINEBELOW" colorName="#000000" start="3,-1" stop="3,-1"/>
+      <lineStyle kind="LINEBELOW" colorName="#000000" start="4,-1" stop="4,-1"/>
+      <lineStyle kind="LINEBELOW" colorName="#000000" start="5,-1" stop="5,-1"/>
     </blockTableStyle>
     <blockTableStyle id="Table2">
       <blockAlignment value="LEFT"/>
@@ -23,11 +26,16 @@
       <lineStyle kind="LINEBELOW" colorName="#c0c0c0" start="0,-1" stop="0,-1"/>
       <lineStyle kind="LINEBELOW" colorName="#c0c0c0" start="1,-1" stop="1,-1"/>
       <lineStyle kind="LINEBELOW" colorName="#c0c0c0" start="2,-1" stop="2,-1"/>
+      <lineStyle kind="LINEBELOW" colorName="#c0c0c0" start="3,-1" stop="3,-1"/>
+      <lineStyle kind="LINEBELOW" colorName="#c0c0c0" start="4,-1" stop="4,-1"/>
+      <lineStyle kind="LINEBELOW" colorName="#c0c0c0" start="5,-1" stop="5,-1"/>
+
     </blockTableStyle>
     <initialize>
       <paraStyle name="all" alignment="justify"/>
     </initialize>
     <paraStyle name="P1" fontName="Helvetica-Bold" fontSize="11.0" leading="14"/>
+    <paraStyle name="P5" fontName="Helvetica-Bold" fontSize="10.0" leading="14"/>
     <paraStyle name="P2" rightIndent="0.0" leftIndent="0.0" fontName="Helvetica" fontSize="10.0" leading="13" alignment="LEFT"/>
     <paraStyle name="P3" rightIndent="0.0" leftIndent="0.0" fontName="Helvetica" alignment="LEFT"/>
     <paraStyle name="P4" fontName="Helvetica" alignment="CENTER"/>
@@ -57,7 +65,7 @@
     <para style="Standard">
       <font color="white"> </font>
     </para>
-    <blockTable colWidths="155.0,146.0,182.0" style="Table1">
+    <blockTable colWidths="80.5,80.5,191.5,50.0,50.0,50.0" style="Table1">
       <tr>
         <td>
           <para style="P1">Name</para>
@@ -68,11 +76,20 @@
         <td>
           <para style="P1">Email</para>
         </td>
+        <td>
+          <para style="P5">No Of Leads</para>
+        </td>
+        <td>
+          <para style="P5">No Of Sales</para>
+        </td>
+        <td>
+          <para style="P5">Total Sales Amount</para>
+        </td>
       </tr>
     </blockTable>
     <section>
       <para style="Standard">[[ repeatIn(do_line(data['form']),'m') ]]</para>
-    <blockTable colWidths="155.0,146.0,182.0" style="Table2">
+    <blockTable colWidths="80.5,80.5,191.5,50.0,50.0,50.0" style="Table2">
       <tr>
         <td>
           <para style="P2">[[ m['name'] ]]</para>
@@ -84,8 +101,17 @@
           </para>
         </td>
         <td>
-          <para style="P3">[[ m['email'] ]]</para>
+          <para style="P2">[[ m['email'] ]]</para>
         </td>
+        <td>
+          <para style="P2">[[ m['lead'] ]]</para>
+        </td>
+        <td>
+          <para style="P2">[[ m['sale'] ]]</para>
+        </td>
+        <td>
+          <para style="P2">[[ m['total'] ]]</para>
+        </td>        
       </tr>
     </blockTable>
     </section>
