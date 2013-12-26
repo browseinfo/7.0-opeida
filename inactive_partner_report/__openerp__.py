@@ -32,14 +32,11 @@
     'website': 'http://www.openerp.com',
     'images': [],
     'depends': ['sale','crm'],
-#     'data': [
-#          'partner_inactive_data.xml',
-#         ],
-
     'data': [
         'wizard/inactive_partner_wizard_view.xml',
+        'partner_inactive_user_view.xml',
     ],
-    'demo': [],
+    'demo': ['partner_inactive_data.xml'],
     'test': [],
     'installable': True,
     'auto_install': False,

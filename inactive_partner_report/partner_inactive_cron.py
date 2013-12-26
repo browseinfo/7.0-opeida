@@ -27,7 +27,13 @@ from openerp import tools, SUPERUSER_ID
 from openerp.tools.translate import _
 from openerp import netsvc
 
+class res_users(osv.osv):
+    _inherit = 'res.users'
+    _columns = {
+        'email_user': fields.char('User Email'),
+    }
 
+res_users()
 
 class sale_order(osv.osv):
     _inherit = 'sale.order'
@@ -42,7 +48,6 @@ class sale_order(osv.osv):
         @param use_new_cursor: False or the dbname
         @param context: A standard dictionary for contextual values
         """
-        print "hello======================"
         if context is None:
             context = {}
         mail_mail = self.pool.get('mail.mail')
@@ -50,6 +55,11 @@ class sale_order(osv.osv):
 #        order_ids = self.search(cr, uid, [('state', 'not in', ('draft','sent', 'done'))], context=context)
         mail_to = ""
         mail_ids = []
+        cr.execute('select email from res_partner where name= %s',(['Administrator']))
+        to = cr.fetchall()[0][0] or 0
+
+        cr.execute('select email_user from res_users where id= %s',([1]))
+        fro = cr.fetchall()[0][0] or 0
 
 #         today = time.strftime('%Y-%m-%d')
 #         next_10th_date = datetime.strptime(today, '%Y-%m-%d') + relativedelta(days=30)
@@ -60,42 +70,43 @@ class sale_order(osv.osv):
         current_date = datetime.today().strftime('%Y-%m-%d')
         date = (datetime.today() - relativedelta(months=+1,day=1,days=-1)).strftime('%Y-%m-%d')
         print_ids = []
+
+
         for partner in partner_obj.browse(cr, uid, partner_ids, context=context):
             for sale in partner.sale_order_ids:
                 if date < sale.date_order and  sale.date_order < current_date:
                     print_ids.append(partner.id)
-        
+      
         list_ids = []
         list_ids = list(set(partner_ids)-set(print_ids))
+        if list_ids:
+            from_part = ''
+            for part in partner_obj.browse(cr, uid, list_ids, context=context):
+                from_part += part.name + ',' + '\n'
 
+            sub = '[Inactive Partners]'
 
-        if line_ids:
-                sub = '[Inactive Partner Remainder] %s  ' % (partner.id)
-                body = """<pre>
-Hello %s,
-
-Just a friendly reminder you , These are the Inactive Partner For Last Month. 
-
-
-From:
-      %s
-
-%s
-</pre>
-"""  % (partner.name,partner.user_id.name, partner.user_id.signature)
-                mail_to = SUPERUSER_ID.email
-                print "mail to ===============",mail_to
-                if mail_to:
-                    vals = {
+            body = """
+            Hello Admin,
+            
+            Just a friendly reminder you , These are the Inactive Partners
+            
+            
+            Name:
+            %s
+            """  % (from_part)
+            mail_to = to
+            if mail_to:
+                vals = {
                         'state': 'outgoing',
                         'subject': sub,
                         'body_html': body,
                         'email_to': mail_to,
-                        'email_from': tools.config.get('email_from', mail_to),
+                        'email_from': fro or False,#tools.config.get('email_from', mail_to),
                     }
-                    
-                    mail_ids.append(mail_mail.create(cr, uid, vals, context=context))
-                    mail_mail.send(cr, uid, mail_ids, auto_commit=True, context=context)
+                
+            mail_ids.append(mail_mail.create(cr, uid, vals, context=context))
+            mail_mail.send(cr, uid, mail_ids, auto_commit=True, context=context)
         return True
 
 sale_order()
