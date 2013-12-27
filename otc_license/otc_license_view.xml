@@ -56,13 +56,14 @@
         <tree string="OTC License" colors="gray:sold==True;">
             <field name="product_id"/>
             <field name="otc"/>
-	    <field name="partner_id"/>
-	    <field name="so_name"/>
+		    <field name="partner_id"/>
+		    <field name="so_name"/>
             <field name="activation_start_date"/>
             <field name="activation_end_date"/>
             <field name="expiry_date"/>
             <field name="runtime"/>
             <field name="vso_id"/>
+            <field name="qr_no"/>
             <field name="sold" invisible="1"/>
         </tree>
       </field>

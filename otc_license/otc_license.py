@@ -51,7 +51,7 @@ class otc_license(osv.osv):
         'sold': fields.boolean('sold'),
         'partner_id': fields.many2one('res.partner', 'Partner'),
         'so_name': fields.char('Sale Order Name'),
-        
+        'qr_no':fields.char('QR Number',size=64),
     }
     _defaults = {
         'sold': False,

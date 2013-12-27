@@ -26,27 +26,50 @@ class stock_production_lot(osv.osv):
     _defaults = {
         'name': False,
     }
+
     def import_csv(self, cr, uid, ids, context=None):
-		    license = self.pool.get('otc.license')
-		    aa = self.browse(cr,uid,ids)[0]
-		    now = datetime.datetime.now()
-		    if aa.csv_path:
-				try:
-					datafile = open(aa.csv_path, 'r')
-				except:
-					raise osv.except_osv(_('Error!'), _('Wrong CSV Path.'))
-		    datareader = csv.reader(datafile, delimiter='\t')
-		    print datareader
-		    data = []
-		    count = 1 
-		    for row in datareader:
-		    	if count == 1:
-		    		count = 0
-		    		continue
-		        data_create = {'otc':row[0],'vso_id':ids[0],
-		                           'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3]}
-		        print "data_create", data_create
-		        license.create(cr, uid,data_create,context=context)
+            obj_seq = self.pool.get('ir.sequence')
+            license = self.pool.get('otc.license')
+            product = self.pool.get('stock.production.lot').browse(cr,uid,ids[0]).product_id.id
+            vso_obj = self.pool.get('vso.vso')
+            qr_obj = self.pool.get('qr.number')
+            aa = self.browse(cr,uid,ids)[0]
+            ot = license.browse(cr,uid,ids)[0]
+            vso = aa.name[3:8]+':'
+            st_number = obj_seq.next_by_code(cr, uid, 'qr.number', context=context)
+            print "st_number=========",st_number
+            #if vso:
+            today = time.strftime('%d%m%y')
+            qr_id = qr_obj.create(cr, uid, {'product_id': product}, context=context)
+            qr_seq = qr_obj.browse(cr, uid, qr_id).name
+            qr_code = vso + today + ':' + qr_seq
+
+            aa = self.browse(cr,uid,ids)[0]
+            now = datetime.datetime.now()
+            if aa.csv_path:
+		        try:
+			        datafile = open(aa.csv_path, 'r')
+		        except:
+			        raise osv.except_osv(_('Error!'), _('Wrong CSV Path.'))
+            datareader = csv.reader(datafile, delimiter='\t')
+            print datareader
+            data = []
+            count = 1 
+            row_len = 1
+            for row in datareader:
+            	if count == 1:
+            		count = 0
+            		continue
+                qr_code = vso + today + ':' + qr_seq
+                if row_len > 1:
+                    print "\n\n***",row_len
+                    qr_code = vso + today + ':' + str(int(qr_seq)+1)
+                    qr_seq = str(int(qr_seq)+1)
+                data_create = {'otc':row[0],'vso_id':ids[0],
+                                   'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3], 'qr_no':qr_code}
+                row_len = row_len + 1
+                print "data_create", data_create
+                license.create(cr, uid,data_create,context=context)
 stock_production_lot()
 
 
