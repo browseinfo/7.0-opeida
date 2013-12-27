@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <openerp>
-    <data noupdate="0">
+    <data noupdate="1">
 
         <!-- Scheduler for Mail Remainder of inactive partner-->
         <record forcecreate="True" id="ir_cron_inactive_scheduler"
