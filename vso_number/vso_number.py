@@ -112,7 +112,6 @@ class sale_order_line(osv.osv):
         vso_obj = self.pool.get('vso.vso')
         qty = 0.0
         vso_lines = vals.get('vso_line_ids')
-        vso_qty = vals.get('product_uom_qty')
         if vso_lines:
             for vso in vso_lines:
                 if vso and vso[2]:
@@ -122,6 +121,42 @@ class sale_order_line(osv.osv):
                                              _('Vso line Quantity "%s" is greater then total selected vso quantity "%s"."') % (qty, vso_qty))
         return super(sale_order_line, self).create(cr, uid, vals, context=context)
 
+    def write(self, cr, uid, ids, vals, context=None):
+        if not ids:
+            return []
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+        lines = []
+        product_obj = self.pool.get('product.product')
+        pro = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'vso_number', 'product_product_box')[1]
+        reco = product_obj.browse(cr, uid, pro, context=context)
+
+        if vals.get('product_id') or vals.get('product_uom_qty'):
+            if not vals.get('product_id'):
+                prod_id = self.browse(cr, uid, ids[0], context=context).product_id
+                no_otc = prod_id.no_otc
+            else:
+                no_otc = product_obj.browse(cr, uid, vals.get('product_id'), context=context).no_otc or 0.0
+            old_line = self.browse(cr, uid, ids[0], context=context) 
+            is_box = old_line.with_box
+            old_line_qty = old_line.product_uom_qty 
+            if old_line.product_id.no_otc != 0:
+#                 raise osv.except_osv(_('Warning!'),
+#                                              _('Invalid OTC!'))
+                old_line_box_qty = old_line_qty/old_line.product_id.no_otc 
+                qty = vals.get('product_uom_qty') or 0.0
+                order_id = self.browse(cr, uid, ids[0]).order_id.id
+
+            if is_box:
+                new_line_box_qty = qty / no_otc
+                update_box_id = self.search(cr, uid, [('order_id', '=', order_id),('product_id', '=', pro)], context=context)
+                line_browse = self.browse(cr, uid, update_box_id)[0]
+                old_box_qty = line_browse.product_uom_qty
+                box_qty = old_box_qty - old_line_box_qty + float(new_line_box_qty)
+                line_browse.write({'product_uom_qty': box_qty})
+                return super(sale_order_line, self).write(cr, uid, ids, vals, context=context)
+            else:
+                return super(sale_order_line, self).write(cr, uid, ids, vals, context=context)
 
 sale_order_line()
 
@@ -131,6 +166,45 @@ class sale_order(osv.osv):
     _columns = {
         'vso_id':fields.many2one('stock.production.lot','VSO Number', select=True, domain="[('product_id','=',product_id)]"),
     }
+
+    def create(self, cr, uid, vals, context=None):
+        res = super(sale_order, self).create(cr, uid, vals, context=context)
+        sale_line = self.pool.get('sale.order.line')
+        vso_obj = self.pool.get('vso.vso')
+        qty = 0.0
+        boxqty = 0.0
+        vso_lines = vals.get('vso_line_ids')
+        product_obj = self.pool.get('product.product')
+        line = vals.get('order_line')
+        lines = len(line)
+        product_qty = line[0][2]['product_uom_qty']
+        product = line[0][2]['product_id']
+        box = line[0][2]['with_box']
+        otc = product_obj.browse(cr, uid, product, context=context).no_otc or 0
+        pro = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'vso_number', 'product_product_box')[1]
+        reco = product_obj.browse(cr, uid, pro, context=context)
+        if otc == 0:
+                raise osv.except_osv(_('Warning!'),
+                                             _('Invalid OTC!'))
+        i = 0 
+        test = 0       
+        while(i < lines):
+            test += line[i][2]['product_uom_qty'] / otc
+            i +=1
+        if box == True:
+            boxqty = product_qty / otc
+            vals = {'product_uom_qty' : test,'price_unit':1,'name':reco.name,'product_id': pro, 'uom_id':reco.uom_id,
+                    'order_id':res}
+            sale_line.create(cr, uid, vals)
+
+        if vso_lines:
+            for vso in vso_lines:
+                if vso and vso[2]:
+                    qty += vso[2].get('product_qty')                    
+            if qty > vso_qty:
+                raise osv.except_osv(_('Warning!'),
+                                             _('Vso line Quantity "%s" is greater then total selected vso quantity "%s"."') % (qty, vso_qty))
+        return res
 
     def _prepare_vso_order_line_move(self, cr, uid, order, line, vso, picking_id, date_planned, context=None):
         location_id = order.shop_id.warehouse_id.lot_stock_id.id

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+        <record id="product_product_box" model="product.product">
+            <field name="list_price">1.0</field>
+            <field name="standard_price">1.0</field>
+            <field name="uom_id" ref="product.product_uom_unit"/>
+            <field name="uom_po_id" ref="product.product_uom_unit"/>
+            <field name="name">Box</field>
+            <field name="description">Box</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+            <field name="type">product</field>
+			<field name="procure_method">make_to_order</field>
+			<field name="supply_method">buy</field>
+        </record>
+    </data>
+</openerp>
