@@ -122,6 +122,7 @@ class sale_order_line(osv.osv):
         return super(sale_order_line, self).create(cr, uid, vals, context=context)
 
     def write(self, cr, uid, ids, vals, context=None):
+        res = super(sale_order_line, self).write(cr, uid, ids, vals, context=context)
         if not ids:
             return []
         if isinstance(ids, (int, long)):
@@ -130,7 +131,6 @@ class sale_order_line(osv.osv):
         product_obj = self.pool.get('product.product')
         pro = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'vso_number', 'product_product_box')[1]
         reco = product_obj.browse(cr, uid, pro, context=context)
-
         if vals.get('product_id') or vals.get('product_uom_qty'):
             if not vals.get('product_id'):
                 prod_id = self.browse(cr, uid, ids[0], context=context).product_id
@@ -152,11 +152,11 @@ class sale_order_line(osv.osv):
                 update_box_id = self.search(cr, uid, [('order_id', '=', order_id),('product_id', '=', pro)], context=context)
                 line_browse = self.browse(cr, uid, update_box_id)[0]
                 old_box_qty = line_browse.product_uom_qty
-                box_qty = old_box_qty - old_line_box_qty + float(new_line_box_qty)
+                box_qty = old_box_qty - old_line_box_qty + new_line_box_qty
                 line_browse.write({'product_uom_qty': box_qty})
-                return super(sale_order_line, self).write(cr, uid, ids, vals, context=context)
+                return res
             else:
-                return super(sale_order_line, self).write(cr, uid, ids, vals, context=context)
+                return res
 
 sale_order_line()
 
