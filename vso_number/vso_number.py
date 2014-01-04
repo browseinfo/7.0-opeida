@@ -34,9 +34,9 @@ class stock_production_lot(osv.osv):
             ot = license.browse(cr,uid,ids)[0]
             cur_vso = aa.name
             vso = aa.name[3:8]+':'
-            cr.execute('select name from stock_production_lot')
+            cr.execute('select name from stock_production_lot where id=%s',([aa.id]))
             res = cr.fetchall()
-            total_len = len(res)-1
+            total_len = len(res)-2
             vsoname = res[total_len][0]
             today = time.strftime('%d%m%y')
             aa = self.browse(cr,uid,ids)[0]
@@ -51,20 +51,22 @@ class stock_production_lot(osv.osv):
             data = []
             count = 1 
             row_len = 1
-
+            seq = "0000%d" % (int(00001))
             for row in datareader:
                 if count == 1:
                     count = 0
                     continue
-                seq = obj_seq.next_by_code(cr, uid, 'otc.license', context=context)
-                qr_code = vso + today + ':'+seq
-#                 if str(cur_vso) != str(vsoname):
-#                     seq = str(001 + 1)
-#                     print "11111111111111111",seq
-#                     qr_code = vso + today + ':' + str('000') + str(int(seq))
+                #seq = obj_seq.next_by_code(cr, uid, 'otc.license', context=context)
+                qr_code = ''
+                if cur_vso == vsoname:
+                    qr_code = str(vso) + str(today) + ':'+str(seq)
+                    if row_len > 1:
+                        seq = int(seq) + 1
+                        qr_code = str(vso) + str(today) + ':'+ '0000' +str(seq)
+#                    qr_code = vso + today + ':' + seq
 #                 else:
 #                     qr_code = vso + today + ':' + str('000') + str(int(seq))
-#                 if row_len > 1:
+#                 
 #                     seq = str(int(seq)+1)
 #                     qr_code = vso + today + ':' + str('00') + str(int(seq))
 #                     seq = str(int(seq)+1)
@@ -138,14 +140,15 @@ class sale_order_line(osv.osv):
     def create(self, cr, uid, vals, context=None):
         vso_obj = self.pool.get('vso.vso')
         qty = 0.0
+        vso_qty = 0.0
         vso_lines = vals.get('vso_line_ids')
         if vso_lines:
             for vso in vso_lines:
                 if vso and vso[2]:
-                    qty += vso[2].get('product_qty')                    
-            if qty > vso_qty:
+                    qty += vso[2].get('product_qty')  
+            if qty > vso[2].get('product_qty'):
                 raise osv.except_osv(_('Warning!'),
-                                             _('Vso line Quantity "%s" is greater then total selected vso quantity "%s"."') % (qty, vso_qty))
+                                             _('Vso line Quantity "%s" is greater then total selected vso quantity "%s"."') % (qty, vso[2].get('product_qty')))
         return super(sale_order_line, self).create(cr, uid, vals, context=context)
 
     def write(self, cr, uid, ids, vals, context=None):
