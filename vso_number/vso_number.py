@@ -140,7 +140,6 @@ class sale_order_line(osv.osv):
     def create(self, cr, uid, vals, context=None):
         vso_obj = self.pool.get('vso.vso')
         qty = 0.0
-        vso_qty = 0.0
         vso_lines = vals.get('vso_line_ids')
         if vso_lines:
             for vso in vso_lines:

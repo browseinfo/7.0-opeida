@@ -153,6 +153,38 @@ class sale_order(osv.osv):
             'nodestroy': True,
         }
 
+    def action_cancel(self, cr, uid, ids, context=None):
+        if context is None:
+            context = {}
+        res = super(sale_order, self).action_cancel(cr, uid, ids, context=context)
+        mail_mail = self.pool.get('mail.mail')
+        mail_to = ""
+        mail_ids = []
+
+        admin_email = self.pool.get('res.users').browse(cr, uid, [1])[0].email
+        for sale in self.browse(cr, uid, ids, context=context):
+            name = sale.name
+            mail_to = sale.partner_id.email
+            if mail_to:
+                sub = '[Cancelled Sale Order]'
+    
+                body = """
+                Hello , \n              
+                We have got your Sale Order %s Cancelled
+                """ % (name)                      
+                if mail_to:
+                    vals = {
+                            'state': 'outgoing',
+                            'subject': sub,
+                            'body_html': body,
+                            'email_to': mail_to,
+                            'email_from': admin_email,
+                        }
+                   
+                    mail_ids.append(mail_mail.create(cr, uid, vals))
+                    mail_mail.send(cr, uid, mail_ids, auto_commit=True)
+        return res
+
 sale_order()
 #
 #    def do_run_scheduler(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
