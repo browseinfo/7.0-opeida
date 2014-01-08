@@ -12,10 +12,6 @@ import datetime
 import csv
 import cStringIO
 
-from odf.opendocument import Spreadsheet
-from odf.opendocument import load
-from odf.table import TableRow,TableCell
-from odf import text
 
 import re
 import urllib2
