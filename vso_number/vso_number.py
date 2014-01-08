@@ -10,79 +10,92 @@ from openerp.tools.translate import _
 from openerp import netsvc
 import datetime
 import csv
+import cStringIO
+
+from odf.opendocument import Spreadsheet
+from odf.opendocument import load
+from odf.table import TableRow,TableCell
+from odf import text
+
+import re
+import urllib2
+import sys
+from urllib2 import urlopen
+from xlwt import Workbook, easyxf, Formula
+import StringIO
+import base64
+import xlrd
+from xlrd import open_workbook
+from xlutils.copy import copy
+import addons
+from os.path import join
+
 
 
 class stock_production_lot(osv.osv):
-    _inherit = 'stock.production.lot'
-    _columns = {
-        'name': fields.char('VSO Number', size=64, required=True),
-#        'otc_ids': fields.many2many('otc.license', 'otc_license_lot_rel', 'vso_id', 'otc_id'),
-        'otc_ids' : fields.one2many('otc.license', 'vso_id', 'OTC'),
-        'csv_path' : fields.char('Path CSV', size=264),
-        }
+	_inherit = 'stock.production.lot'
+	_columns = {
+		'name': fields.char('VSO Number', size=64, required=True),
+		#        'otc_ids': fields.many2many('otc.license', 'otc_license_lot_rel', 'vso_id', 'otc_id'),
+		'otc_ids' : fields.one2many('otc.license', 'vso_id', 'OTC'),
+		'csv_path' : fields.binary('CSV File', size=264),
+	}
 
-    _defaults = {
-        'name': False,
-    }
-    _sql_constraints = [
-        ('vso_uniq', 'unique(name)', 'You can not give VSO name which is already created!'),
-    ]
-    def import_csv(self, cr, uid, ids, context=None):
-            obj_seq = self.pool.get('ir.sequence')
-            license = self.pool.get('otc.license')
-            product_browse = self.pool.get('stock.production.lot').browse(cr,uid,ids[0])
-            product = product_browse.product_id.id
-            vso_obj = self.pool.get('vso.vso')
-            aa = self.browse(cr,uid,ids)[0]
-            ot = license.browse(cr,uid,ids)[0]
-            cur_vso = aa.name
-            vso = aa.name[3:8]+':'
-            cr.execute('select name from stock_production_lot where id=%s',([aa.id]))
-            res = cr.fetchall()
-            total_len = len(res)-2
-            vsoname = res[total_len][0]
-            today = time.strftime('%d%m%y')
-            aa = self.browse(cr,uid,ids)[0]
-            now = datetime.datetime.now()
-            if aa.csv_path:
-                try:
-                    datafile = open(aa.csv_path, 'r')
-                except:
-                    raise osv.except_osv(_('Error!'), _('Wrong CSV Path.'))
-            datareader = csv.reader(datafile, delimiter='\t')
-            no_of_otc = product_browse.product_id.no_otc
-            data = []
-            count = 1 
-            row_len = 1
-            #seq = "0000%d" % (int(00001))            
-            seq = 00001           
-            count_otc = 1
-            for row in datareader:
-                if count == 1:
-                    count = 0
-                    continue
-                #seq = obj_seq.next_by_code(cr, uid, 'otc.license', context=context)
-                qr_code = ''
-                
-                if count_otc == no_of_otc:
-                    qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
-                    seq = int(seq) + 1
-                    count_otc = 1
-                else:
-                    qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
-                    count_otc = count_otc + 1
-#                    qr_code = vso + today + ':' + seq
-#                 else:
-#                     qr_code = vso + today + ':' + str('000') + str(int(seq))
-#                 
-#                     seq = str(int(seq)+1)
-#                     qr_code = vso + today + ':' + str('00') + str(int(seq))
-#                     seq = str(int(seq)+1)
-                        
-                data_create = {'otc':row[0],'vso_id':ids[0],
-                               'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3], 'qr_no':qr_code}
-                row_len = row_len + 1
-                license.create(cr, uid,data_create,context=context)
+	_defaults = {
+		'name': False,
+	}
+	_sql_constraints = [
+		('vso_uniq', 'unique(name)', 'You can not give VSO name which is already created!'),
+	]
+    
+	def import_csv(self, cr, uid, ids, context=None):
+		obj_seq = self.pool.get('ir.sequence')
+		license = self.pool.get('otc.license')
+		product_browse = self.pool.get('stock.production.lot').browse(cr,uid,ids[0])
+		product = product_browse.product_id.id
+		vso_obj = self.pool.get('vso.vso')
+		current_obj = self.browse(cr,uid,ids)[0]
+		ot = license.browse(cr,uid,ids)[0]
+		cur_vso = current_obj.name
+		vso = current_obj.name[3:8]+':'
+		cr.execute('select name from stock_production_lot where id=%s',([current_obj.id]))
+		res = cr.fetchall()
+		total_len = len(res)-2
+		vsoname = res[total_len][0]
+		today = time.strftime('%d%m%y')
+		now = datetime.datetime.now()
+
+		for current in self.browse(cr, uid ,ids, context=context):
+			if current_obj.csv_path:
+				file_data = base64.decodestring(current_obj.csv_path)
+				input = cStringIO.StringIO(file_data)
+				reader = csv.reader(input)
+				no_of_otc = product_browse.product_id.no_otc
+				data = []
+				count = 1 
+				row_len = 1
+				#seq = "0000%d" % (int(00001))            
+				seq = 00001           
+				count_otc = 1
+				for row in reader:
+					if count == 1:
+						count = 0
+						continue
+					qr_code = ''
+
+					if count_otc == no_of_otc:
+						qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
+						seq = int(seq) + 1
+						count_otc = 1
+					else:
+						qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
+						count_otc = count_otc + 1
+
+						data_create = {'otc':row[0],'vso_id':ids[0],
+						'runtime' : row[4], 'product_id': current_obj.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3], 'qr_no':qr_code}
+						row_len = row_len + 1
+						license.create(cr, uid,data_create,context=context)
+		return True
 
 stock_production_lot()
 
