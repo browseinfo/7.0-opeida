@@ -15,7 +15,7 @@
 		        <field name="name" position="after">
 		        	<label for="csv_path"/>
 		        		<div>
-				            <field name="csv_path"/>
+				            <field name="attachment_csv"/>
 				            <button name="import_csv" string="Import OTC" type="object"  class="oe_inline" />
 			            </div>
 		        </field>

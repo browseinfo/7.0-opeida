@@ -34,7 +34,7 @@ class stock_production_lot(osv.osv):
 		'name': fields.char('VSO Number', size=64, required=True),
 		#        'otc_ids': fields.many2many('otc.license', 'otc_license_lot_rel', 'vso_id', 'otc_id'),
 		'otc_ids' : fields.one2many('otc.license', 'vso_id', 'OTC'),
-		'csv_path' : fields.binary('CSV File', size=264),
+		'attachment_csv': fields.binary("CSV File"),
 	}
 
 	_defaults = {
@@ -45,53 +45,60 @@ class stock_production_lot(osv.osv):
 	]
     
 	def import_csv(self, cr, uid, ids, context=None):
-		obj_seq = self.pool.get('ir.sequence')
-		license = self.pool.get('otc.license')
-		product_browse = self.pool.get('stock.production.lot').browse(cr,uid,ids[0])
-		product = product_browse.product_id.id
-		vso_obj = self.pool.get('vso.vso')
-		current_obj = self.browse(cr,uid,ids)[0]
-		ot = license.browse(cr,uid,ids)[0]
-		cur_vso = current_obj.name
-		vso = current_obj.name[3:8]+':'
-		cr.execute('select name from stock_production_lot where id=%s',([current_obj.id]))
-		res = cr.fetchall()
-		total_len = len(res)-2
-		vsoname = res[total_len][0]
-		today = time.strftime('%d%m%y')
-		now = datetime.datetime.now()
+			obj_seq = self.pool.get('ir.sequence')
+			license = self.pool.get('otc.license')
+			product_browse = self.pool.get('stock.production.lot').browse(cr,uid,ids[0])
+			product = product_browse.product_id.id
+			vso_obj = self.pool.get('vso.vso')
+			aa = self.browse(cr,uid,ids)[0]
+			ot = license.browse(cr,uid,ids)[0]
+			cur_vso = aa.name
+			vso = aa.name[3:8]
+			today = time.strftime('%d%m%y')
+			aa = self.browse(cr,uid,ids)[0]
+			now = datetime.datetime.now()
+			if not aa.attachment_csv:
+				raise osv.except_osv(_('Import Error!'), _('Wrong CSV or File.'))  
+			file_data = False
+			file_data = base64.decodestring(aa.attachment_csv)
+			input = cStringIO.StringIO(file_data)
+			reader = csv.reader(input, delimiter='\t')
+			no_of_otc = product_browse.product_id.no_otc
+			data = []
+			max_ids = []
+			count = 1 
+			row_len = 1
+					 
+			count_otc = 1
+			max_id = 0
+			for ot in product_browse.otc_ids:
+				if ot:
+					ot.id,max_ids.append(ot.id)
+				max_id = max(max_ids)
+			seq = 00001  
+			if max_id:
+				seq = license.browse(cr,uid,max_id,context=context).qr_no[-5:]
+				seq = int(seq) + 1
+				
+			for row in reader:
+				if count == 1:
+					count = 0
+					continue
+				qr_code = ''
 
-		for current in self.browse(cr, uid ,ids, context=context):
-			if current_obj.csv_path:
-				file_data = base64.decodestring(current_obj.csv_path)
-				input = cStringIO.StringIO(file_data)
-				reader = csv.reader(input)
-				no_of_otc = product_browse.product_id.no_otc
-				data = []
-				count = 1 
-				row_len = 1
-				#seq = "0000%d" % (int(00001))            
-				seq = 00001           
-				count_otc = 1
-				for row in reader:
-					if count == 1:
-						count = 0
-						continue
-					qr_code = ''
-
-					if count_otc == no_of_otc:
-						qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
-						seq = int(seq) + 1
-						count_otc = 1
-					else:
-						qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
-						count_otc = count_otc + 1
-
-						data_create = {'otc':row[0],'vso_id':ids[0],
-						'runtime' : row[4], 'product_id': current_obj.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3], 'qr_no':qr_code}
-						row_len = row_len + 1
-						license.create(cr, uid,data_create,context=context)
-		return True
+				if count_otc == no_of_otc:
+					qr_code = str(vso) + str(today) + '0000' + str(seq)
+					seq = int(seq) + 1
+					count_otc = 1
+				else:
+					qr_code = str(vso) + str(today) + '0000' + str(seq)
+					count_otc = count_otc + 1
+						
+				data_create = {'otc':row[0],'vso_id':ids[0],
+							   'runtime' : row[4], 'product_id': aa.product_id.id or '', 'activation_start_date' : row[1], 'activation_end_date' : row[2], 'expiry_date' : row[3], 'qr_no':qr_code}
+				row_len = row_len + 1
+				license.create(cr, uid,data_create,context=context)
+			return True
 
 stock_production_lot()
 
