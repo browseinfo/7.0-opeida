@@ -57,9 +57,9 @@ class otc_license(osv.osv):
         'sold': False,
     }
 
-#    _constraints = [
-#        (_check_sold, 'You can not sell OTC license which already sold!', ['otc','product_id']),
-#    ]
+#     _constraints = [
+#         (_check_vso, 'You can not sell OTC license which already sold!', ['otc','product_id']),
+#     ]
 
     def on_change_product_id(self, cr, uid, ids, product_id, context=None):
         values = {}

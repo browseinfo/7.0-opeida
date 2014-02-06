@@ -24,11 +24,14 @@ class stock_production_lot(osv.osv):
     _defaults = {
         'name': False,
     }
-
+    _sql_constraints = [
+        ('vso_uniq', 'unique(name, product_id)', 'You can not select vso which is already created!'),
+    ]
     def import_csv(self, cr, uid, ids, context=None):
             obj_seq = self.pool.get('ir.sequence')
             license = self.pool.get('otc.license')
-            product = self.pool.get('stock.production.lot').browse(cr,uid,ids[0]).product_id.id
+            product_browse = self.pool.get('stock.production.lot').browse(cr,uid,ids[0])
+            product = product_browse.product_id.id
             vso_obj = self.pool.get('vso.vso')
             aa = self.browse(cr,uid,ids)[0]
             ot = license.browse(cr,uid,ids)[0]
@@ -47,22 +50,27 @@ class stock_production_lot(osv.osv):
                 except:
                     raise osv.except_osv(_('Error!'), _('Wrong CSV Path.'))
             datareader = csv.reader(datafile, delimiter='\t')
-            print datareader
+            no_of_otc = product_browse.product_id.no_otc
             data = []
             count = 1 
             row_len = 1
-            seq = "0000%d" % (int(00001))
+            seq = "0000%d" % (int(00001))            
+            count_otc = 1
             for row in datareader:
                 if count == 1:
                     count = 0
                     continue
                 #seq = obj_seq.next_by_code(cr, uid, 'otc.license', context=context)
                 qr_code = ''
+                
                 if cur_vso == vsoname:
-                    qr_code = str(vso) + str(today) + ':'+str(seq)
-                    if row_len > 1:
+                    if count_otc == no_of_otc:
+                        qr_code = str(vso) + str(today) + ':' +str(seq)
                         seq = int(seq) + 1
-                        qr_code = str(vso) + str(today) + ':'+ '0000' +str(seq)
+                        count_otc = 1
+                    else:
+                        qr_code = str(vso) + str(today) + ':' +str(seq)
+                        count_otc = count_otc + 1
 #                    qr_code = vso + today + ':' + seq
 #                 else:
 #                     qr_code = vso + today + ':' + str('000') + str(int(seq))

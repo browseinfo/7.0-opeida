@@ -13,8 +13,8 @@
                         <filter string="VSO" domain="[]" context="{'group_by':'vso_id'}" help="vso reference"/>
                         <filter string="Product"  domain="[]" context="{'group_by':'product_id'}"/>
                         <filter string="Sold"  domain="[]" context="{'group_by':'sold'}"/>
-			<filter string="Sale Order"  domain="[]" context="{'group_by':'so_name'}"/>
-			<filter string="Partner"  domain="[]" context="{'group_by':'partner_id'}"/>
+						<filter string="Sale Order"  domain="[]" context="{'group_by':'so_name'}"/>
+						<filter string="Partner"  domain="[]" context="{'group_by':'partner_id'}"/>
                     </group>
                 </search>
             </field>
@@ -77,7 +77,6 @@
         <field name="view_type">form</field>
         <field name="search_view_id" ref="view_otc_license_filter"/>
         <field name="context">{"search_default_sold":1}</field>
-        
     </record>
     <menuitem name="OTC License" id="menu_otc_license_parent" parent="base.menu_purchase_root"/>
     <menuitem name="OTC License" id="menu_otc_license" parent="menu_otc_license_parent" action="action_otc_license_stage"/>
