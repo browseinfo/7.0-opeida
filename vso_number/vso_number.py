@@ -54,7 +54,8 @@ class stock_production_lot(osv.osv):
             data = []
             count = 1 
             row_len = 1
-            seq = "0000%d" % (int(00001))            
+#            seq = "0000%d" % (int(00001))            
+            seq = 00001           
             count_otc = 1
             for row in datareader:
                 if count == 1:
@@ -65,11 +66,11 @@ class stock_production_lot(osv.osv):
                 
                 if cur_vso == vsoname:
                     if count_otc == no_of_otc:
-                        qr_code = str(vso) + str(today) + ':' +str(seq)
+                        qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
                         seq = int(seq) + 1
                         count_otc = 1
                     else:
-                        qr_code = str(vso) + str(today) + ':' +str(seq)
+                        qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
                         count_otc = count_otc + 1
 #                    qr_code = vso + today + ':' + seq
 #                 else:
