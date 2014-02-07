@@ -25,7 +25,7 @@ class stock_production_lot(osv.osv):
         'name': False,
     }
     _sql_constraints = [
-        ('vso_uniq', 'unique(name, product_id)', 'You can not select vso which is already created!'),
+        ('vso_uniq', 'unique(name)', 'You can not give VSO name which is already created!'),
     ]
     def import_csv(self, cr, uid, ids, context=None):
             obj_seq = self.pool.get('ir.sequence')
@@ -54,7 +54,7 @@ class stock_production_lot(osv.osv):
             data = []
             count = 1 
             row_len = 1
-#            seq = "0000%d" % (int(00001))            
+            #seq = "0000%d" % (int(00001))            
             seq = 00001           
             count_otc = 1
             for row in datareader:
@@ -64,14 +64,13 @@ class stock_production_lot(osv.osv):
                 #seq = obj_seq.next_by_code(cr, uid, 'otc.license', context=context)
                 qr_code = ''
                 
-                if cur_vso == vsoname:
-                    if count_otc == no_of_otc:
-                        qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
-                        seq = int(seq) + 1
-                        count_otc = 1
-                    else:
-                        qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
-                        count_otc = count_otc + 1
+                if count_otc == no_of_otc:
+                    qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
+                    seq = int(seq) + 1
+                    count_otc = 1
+                else:
+                    qr_code = str(vso) + str(today) + ':' + '0000' + str(seq)
+                    count_otc = count_otc + 1
 #                    qr_code = vso + today + ':' + seq
 #                 else:
 #                     qr_code = vso + today + ':' + str('000') + str(int(seq))
